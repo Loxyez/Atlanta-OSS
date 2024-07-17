@@ -5,16 +5,16 @@
 ### Related Issues
 
 <!-- List any related issues or tasks that this merge request addresses. 
-Use keywords like "Closes", "Fixes", or "Resolves" to automatically close the issue when the MR is merged.
-Example: Closes #123, Fixes #456 -->
+Use keywords like "Closes", "Fixes", or "Resolves" to automatically close the issue when the MR is merged. -->
+Example: Closes #123, Fixes #456
 
 ### Changes Made
 
-<!-- Provide a detailed list of changes made in this merge request.
+<!-- Provide a detailed list of changes made in this merge request.-->
 Example:
 - Added a new component for user profiles
 - Refactored the authentication logic
-- Updated the README file with new instructions -->
+- Updated the README file with new instructions
 
 ### Screenshots (if applicable)
 
@@ -22,12 +22,12 @@ Example:
 
 ### Steps to Test
 
-<!-- Provide step-by-step instructions for testing the changes. 
+<!-- Provide step-by-step instructions for testing the changes. -->
 Example:
 1. Pull the branch
 2. Run `npm install` to install dependencies
 3. Run `npm start` to start the development server
-4. Navigate to `/new-feature` to see the changes -->
+4. Navigate to `/new-feature` to see the changes
 
 ### Checklist
 
