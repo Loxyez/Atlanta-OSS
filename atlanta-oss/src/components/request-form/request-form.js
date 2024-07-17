@@ -9,7 +9,6 @@ export default function RequestForm () {
         const fetchData = async () => {
             try {
                 const res = await axios.get(`${config.apiBaseUrl}/requests_form`);
-                console.log('Data fetched:', res.data);
                 setRequest(res.data);
             } catch (error) {
                 console.error('Error fetching the workers data', error);
