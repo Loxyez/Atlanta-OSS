@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import config from '../../utils/config';
 
 export default function RequestForm () {
     const [requests, setRequest] = useState([]);
@@ -7,7 +8,7 @@ export default function RequestForm () {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const res = await axios.get('http://localhost:3001/requests_form');
+                const res = await axios.get(`${config.apiBaseUrl}/requests_form`);
                 console.log('Data fetched:', res.data);
                 setRequest(res.data);
             } catch (error) {
@@ -20,7 +21,7 @@ export default function RequestForm () {
 
     return (
         <div>
-            <h1>รายชื่อคำร้องขอ</h1>
+            <h1>รายชื่อคำร้องขอเข้าใช้ระบบ</h1>
             <ul>
                 {requests.map((req_list) => (
                     <li key={req_list.mid}>
