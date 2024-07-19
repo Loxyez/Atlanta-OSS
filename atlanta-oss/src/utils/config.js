@@ -1,5 +1,5 @@
 const config = {
-    apiBaseUrl: process.env.ATLANTA_BASE_API_URL
+    apiBaseUrl: "https://vercel-core-lambda.vercel.app/"
 };
 
 export default config;
