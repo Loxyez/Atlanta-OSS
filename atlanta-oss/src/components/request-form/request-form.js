@@ -8,7 +8,7 @@ export default function RequestForm () {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const res = await axios.get(`${config.apiBaseUrl}requests_form`);
+                const res = await axios.get(`${config.apiBaseUrl}/requests_form`);
                 setRequest(res.data);
             } catch (error) {
                 console.error('Error fetching the workers data', error);
