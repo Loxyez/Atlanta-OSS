@@ -1,17 +1,20 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import CustomNavbar from '../navigation-bar/navbar';
 
 export default function Home () {
     return(
         <div>
-            <h1>Welcome to Atlanta-OSS</h1>
-            <nav>
+            <CustomNavbar />
+            <div className='container mt-5'>
+                <h1 className='display-4 text-center'>ยินดีต้อนรับเข้าสู้ระบบ Atlanta-OSS</h1>
+                <p className='lead'>ระบบการจัดการข้อมูลและส่งคำร้องขอ</p>
+                <hr className='my-4'/>
                 <ul>
-                    <li>
-                        <Link to="/request_form">ส่งแบบคำร้องขอใช้ระบบ</Link>
-                    </li>
+                    <li>ขอสิทธิ์เข้าใช้ระบบ One Stop Service</li>
+                    <li>ตรวจสอบสิทธ์วันลาต่างๆ</li>
+                    <li>ส่งคำร้องขอวันลา</li>
                 </ul>
-            </nav>
+            </div>
         </div>
     )
 }
