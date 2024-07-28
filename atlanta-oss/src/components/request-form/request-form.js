@@ -7,7 +7,6 @@ import SuccessModal from '../Modal/SuccessModal';
 import ErrorModal from '../Modal/ErrorModel';
 
 export default function RequestForm () {
-    const [requests, setRequests] = useState([]);
     const [userRole, setUserRole] = useState([]);
     const [formData, setFormData] = useState({
         uid: '',
@@ -20,19 +19,6 @@ export default function RequestForm () {
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [showErrorModal, setShowErrorModal] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
-
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const res = await axios.get(`${config.apiBaseUrl}/requests_form`);
-                setRequests(res.data);
-            } catch (error) {
-                console.error('Error fetching the request data', error);
-            }
-        };
-
-        fetchData();
-    }, []);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -66,7 +52,6 @@ export default function RequestForm () {
 
         try {
             const res = await axios.post(`${config.apiBaseUrl}/submit_request_form`, formData);
-            setRequests([...requests, res.data]);
             setFormData({
                 uid: '',
                 email: '',

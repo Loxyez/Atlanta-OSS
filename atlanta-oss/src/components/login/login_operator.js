@@ -18,6 +18,7 @@ export default function LoginOperator() {
         try {
             const res = await axios.post(`${config.apiBaseUrl}/operator_login`, credentials);
             if (res.data.success){
+                localStorage.setItem('token', res.data.token);
                 navigate('/create_user_account');
             } else {
                 setError(res.data.message);
