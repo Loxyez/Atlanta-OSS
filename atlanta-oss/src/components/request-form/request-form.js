@@ -4,6 +4,7 @@ import config from '../../utils/config';
 import CustomNavbar from '../navigation-bar/navbar';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import SuccessModal from '../Modal/SuccessModal';
+import ErrorModal from '../Modal/ErrorModel';
 
 export default function RequestForm () {
     const [requests, setRequests] = useState([]);
@@ -16,7 +17,9 @@ export default function RequestForm () {
         reason: '',
         status: 'Open'
     });
-    const [showModal, setShowModal] = useState(false);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [showErrorModal, setShowErrorModal] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
 
     useEffect(() => {
         const fetchData = async () => {
@@ -53,6 +56,14 @@ export default function RequestForm () {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Basic validation
+        if (!formData.uid || !formData.email || !formData.tel || !formData.role){
+            setErrorMessage('กรุณากรอกข้อมูลให้ครบถ้วน');
+            setShowErrorModal(true);
+            return;
+        }
+
         try {
             const res = await axios.post(`${config.apiBaseUrl}/submit_request_form`, formData);
             setRequests([...requests, res.data]);
@@ -64,15 +75,19 @@ export default function RequestForm () {
                 reason: '',
                 status: ''
             });
-            setShowModal(true);
+            setShowSuccessModal(true);
         } catch (error) {
             console.error('Error submitting the request', error);
         }
     };
 
-    const handleCloseModal = () => {
-        setShowModal(false);
+    const handleCloseSuccessModal = () => {
+        setShowSuccessModal(false);
     };
+
+    const handleCloseErrorModal = () => {
+        setShowErrorModal(false);
+    }
 
     return (
         <div>
@@ -152,7 +167,8 @@ export default function RequestForm () {
                     <button type='submit' className='btn btn-success'>ส่งคำร้องขอ</button>
                 </form>
             </div>
-            <SuccessModal show={showModal} handleClose={handleCloseModal}/>
+            <SuccessModal show={showSuccessModal} handleClose={handleCloseSuccessModal}/>
+            <ErrorModal show={showErrorModal} handleClose={handleCloseErrorModal} message={errorMessage}/>
         </div>
     )
 }
