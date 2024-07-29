@@ -96,6 +96,7 @@ function App () {
   useEffect(() => {
     if (isTokenExpired) {
       localStorage.removeItem('token');
+      setShowModal(false);
       navigate('/');
     }
   }, [isTokenExpired, navigate]);
