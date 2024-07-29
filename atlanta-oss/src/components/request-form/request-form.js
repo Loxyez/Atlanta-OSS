@@ -3,13 +3,14 @@ import axios from 'axios';
 import config from '../../utils/config';
 import CustomNavbar from '../navigation-bar/navbar';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { Spinner } from 'react-bootstrap';
 import SuccessModal from '../Modal/SuccessModal';
 import ErrorModal from '../Modal/ErrorModel';
 
 export default function RequestForm () {
-    const [requests, setRequests] = useState([]);
     const [userRole, setUserRole] = useState([]);
     const [formData, setFormData] = useState({
+        ticketid: '',
         uid: '',
         email: '',
         tel: '',
@@ -19,20 +20,8 @@ export default function RequestForm () {
     });
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [showErrorModal, setShowErrorModal] = useState(false);
-    const [errorMessage, setErrorMessage] = useState('');
-
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const res = await axios.get(`${config.apiBaseUrl}/requests_form`);
-                setRequests(res.data);
-            } catch (error) {
-                console.error('Error fetching the request data', error);
-            }
-        };
-
-        fetchData();
-    }, []);
+    const [message, setMessage] = useState('');
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -54,20 +43,32 @@ export default function RequestForm () {
         });
     };
 
+    const generateTicketID = () => {
+        const currentDate = new Date();
+        const day = String(currentDate.getDate()).padStart(2, '0');
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+        const year = String(currentDate.getFullYear()).slice(-2);
+        const seconds = String(formData.uid).slice(-2);
+        return `PT${day}${month}${year}${seconds}`;
+    }
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        const ticketid = generateTicketID();
+        const newRequest = {...formData, ticketid};
+        setLoading(true);
 
         // Basic validation
         if (!formData.uid || !formData.email || !formData.tel || !formData.role){
-            setErrorMessage('กรุณากรอกข้อมูลให้ครบถ้วน');
+            setMessage('กรุณากรอกข้อมูลให้ครบถ้วน');
             setShowErrorModal(true);
             return;
         }
 
         try {
-            const res = await axios.post(`${config.apiBaseUrl}/submit_request_form`, formData);
-            setRequests([...requests, res.data]);
+            const res = await axios.post(`${config.apiBaseUrl}/submit_request_form`, newRequest);
             setFormData({
+                ticketid: '',
                 uid: '',
                 email: '',
                 tel: '',
@@ -75,9 +76,12 @@ export default function RequestForm () {
                 reason: '',
                 status: ''
             });
+            setMessage('ระบบได้ทำการบันทึกคำร้องขอไว้เรียบร้อย และจะใช้เวลาพิจารณาภายใน 1-2 วัน')
             setShowSuccessModal(true);
         } catch (error) {
             console.error('Error submitting the request', error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -87,7 +91,7 @@ export default function RequestForm () {
 
     const handleCloseErrorModal = () => {
         setShowErrorModal(false);
-    }
+    };
 
     return (
         <div>
@@ -139,7 +143,7 @@ export default function RequestForm () {
                         <div className='col-sm-6'>
                             <label htmlFor='role'>ตำแหน่ง</label>
                             <select className='form-select' id="RoleCategory" name="RoleCategory" onChange={(e) => {
-                                formData.role = e.target.value;
+                                setFormData({ ...formData, role: e.target.value});
                             }} required>
                                 <option value="-">-</option>
                                 {userRole.length > 0 ? (
@@ -164,11 +168,13 @@ export default function RequestForm () {
                         ></textarea>
                     </div>
                     <hr/>
-                    <button type='submit' className='btn btn-success'>ส่งคำร้องขอ</button>
+                    <button type='submit' className='btn btn-success' disabled={loading}>
+                        {loading ? <Spinner as='span' animation='border' size='sm' role='status' aria-hidden='true'/> : 'ส่งคำร้องขอ'}
+                    </button>
                 </form>
             </div>
-            <SuccessModal show={showSuccessModal} handleClose={handleCloseSuccessModal}/>
-            <ErrorModal show={showErrorModal} handleClose={handleCloseErrorModal} message={errorMessage}/>
+            <SuccessModal show={showSuccessModal} handleClose={handleCloseSuccessModal} message={message}/>
+            <ErrorModal show={showErrorModal} handleClose={handleCloseErrorModal} message={message}/>
         </div>
     )
 }
