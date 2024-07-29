@@ -64,7 +64,6 @@ function App () {
     const token = localStorage.getItem('token');
     if(token) {
       const decodedToken = parseJwt(token);
-      console.log(decodedToken)
       const expirationTime = decodedToken.exp * 1000 - Date.now();
 
       const timer = setTimeout(() => {
