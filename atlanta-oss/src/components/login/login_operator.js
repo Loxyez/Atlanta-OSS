@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import config from '../../utils/config';
 import { useNavigate } from 'react-router-dom';
+import { Spinner } from 'react-bootstrap';
 import CustomNavbar from '../navigation-bar/navbar';
 
 export default function LoginOperator() {
     const [credentials, setCredentials] = useState({ user_name: '', user_password: ''});
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -15,15 +17,19 @@ export default function LoginOperator() {
 
     const handleSubmit = async(e) => {
         e.preventDefault();
+        setLoading(true);
         try {
             const res = await axios.post(`${config.apiBaseUrl}/operator_login`, credentials);
             if (res.data.success){
+                localStorage.setItem('token', res.data.token);
                 navigate('/create_user_account');
             } else {
                 setError(res.data.message);
             }
         } catch (err) {
             setError('Server error, Please try again later.');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -32,6 +38,7 @@ export default function LoginOperator() {
             <CustomNavbar/>
             <div className='container mt-5'>
                 <h1>Operator Login</h1>
+                <hr/>
                 <form onSubmit={handleSubmit}>
                     <div className='form-group'>
                         <label htmlFor='user_name'>User Name</label>
@@ -57,8 +64,11 @@ export default function LoginOperator() {
                             required
                         />
                     </div>
+                    <hr/>
                     {error && <div className="alert alert-danger">{error}</div>}
-                    <button type="submit" className="btn btn-primary">Login</button>
+                    <button type="submit" className="btn btn-primary" disabled={loading}>
+                        {loading ? <Spinner as="span" animation='border' size='sm' role='status' aria-hidden="true" /> : 'Login'}
+                    </button>
                 </form>
             </div>
         </div>
