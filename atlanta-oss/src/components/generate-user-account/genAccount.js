@@ -144,7 +144,8 @@ export default function CreateAccount() {
         <div>
             <CustomNavbar/>
             <div className='container mt-5'>
-                <h1>Create User</h1>
+                <h1>Create User Account</h1>
+                <p>For operator only this operation allow generate user account for access the one stop service.</p>
                 <hr/>
                 <h5>Ticket Detail</h5>
                 <form>

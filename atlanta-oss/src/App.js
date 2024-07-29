@@ -63,7 +63,7 @@ function App () {
       const expirationTime = decodedToken.exp * 1000 - Date.now();
 
       const timer = setTimeout(() => {
-        if (location.pathname !== '/' && location.pathname !== '/login_operator_account') {
+        if (location.pathname !== '/' && location.pathname !== '/login_operator_account' && location.pathname !== '/request_form' ) {
           setShowModal(true);
         }
       }, expirationTime - 60000); // Show modal 1 minute before expiration
