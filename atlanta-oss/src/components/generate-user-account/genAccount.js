@@ -27,9 +27,14 @@ export default function CreateAccount() {
         const fetchDataRequest = async () => {
             try {
                 const res = await axios.get(`${config.apiBaseUrl}/requests_form`);
-                setRequests(res.data);
+                if (Array.isArray(res.data)) {
+                    setRequests(res.data);
+                } else {
+                    setRequests([]);
+                }
             } catch (error) {
                 console.error('Error fetching the request data', error);
+                setRequests([]);
             }
         };
 
@@ -65,8 +70,12 @@ export default function CreateAccount() {
                     'Authorization': `Bearer ${token}`
                 }
             });
+
+            if (res.data && res.data.ticketid && res.data.mid) {
+                setRequests([...request, res.data]);
+            }
+
             setMessage('User created successfully');
-            setRequests([...request, res.data]);
             setUser({
                 user_name: '',
                 user_password: '',
@@ -77,6 +86,7 @@ export default function CreateAccount() {
             setShowSuccessModal(true);
         } catch (err) {
             setMessage('Error creating user', err);
+            setShowErrorModal(true);
         } finally {
             setLoading(false);
         }
@@ -85,7 +95,7 @@ export default function CreateAccount() {
     const handleTicketChange = async (e) => {
         const ticketID = e.target.value;
         setTicketID(ticketID);
-        if (ticketID !== '-'){
+        if (ticketID !== '-' && ticketID !== 'N/A') {
             try {
                 const res = await axios.get(`${config.apiBaseUrl}/request_form/${ticketID}`);
                 setSelectedRequest(res.data);
@@ -116,6 +126,7 @@ export default function CreateAccount() {
             setSelectedRequest({ ...selectedRequest, status });
         } catch (err) {
             setMessage('Error updating request status.');
+            setShowErrorModal(true);
         } finally {
             setLoading(false);
         }
@@ -140,12 +151,16 @@ export default function CreateAccount() {
                     <div className='form-group row'>
                         <div className='col-sm-6 mb-3 mb-sm-0'>
                         <label htmlFor='TicketID'>Select Ticket</label>
-                            <select className='form-select' id='TicketID' name="TicketID" onChange={handleTicketChange} required>
+                            <select className='form-select' id='TicketID' name="TicketID" onChange={handleTicketChange}>
                                 <option value="-">-</option>
                                 {
                                     request.length > 0 ? (
                                         request.map((val, key) => (
-                                            <option key={val.mid} value={val.ticketid}>{val.ticketid}</option>
+                                            val.ticketid ? (
+                                                <option key={val.mid} value={val.ticketid}>{val.ticketid}</option>
+                                            ) : (
+                                                <option key={val.mid} value="N/A">No Ticket ID Load yet</option>
+                                            )
                                         ))
                                     ) : (
                                         <option value="-">No data has been found</option>

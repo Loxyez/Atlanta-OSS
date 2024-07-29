@@ -1,7 +1,11 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import axios from 'axios';
+import config from './utils/config';
+import Modal from 'react-bootstrap/Modal';
+import Button from 'react-bootstrap/Button';
 
 import Home from './components/home/home';
 import RequestForm from './components/request-form/request-form';
@@ -12,11 +16,56 @@ import PageNotFound from './components/alert-page/PageNotFound';
 
 import ProtectedRoute from './components/protectedRoute/protectedRoute';
 
-ReactDOM.render(<App/>, document.getElementById('root'));
-
 function App () {
+
+  const [showModal, setShowModal] = useState(false);
+  const navigate = useNavigate();
+
+  const parseJwt = (token) => {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      return JSON.parse(jsonPayload);
+    } catch (e) {
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if(token) {
+      const decodedToken = parseJwt(token);
+      const expirationTime = decodedToken.exp * 1000 - Date.now();
+
+      const timer = setTimeout(() => {
+          setShowModal(true);
+      }, expirationTime - 60000); // Show modal 1 minute before expiration
+
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  const extendSession = async () => {
+    try {
+        const res = await axios.post(`${config.apiBaseUrl}/extend_session`, {}, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+        localStorage.setItem('token', res.data.token);
+        setShowModal(false);
+        window.location.reload(); // Reload to reset the timer
+    } catch (err) {
+        console.error('Error extending session:', err);
+        navigate('/unauthorized');
+    }
+  }
+
   return (
-    <Router>
+    <div>
       <Routes>
         {/* Normal Path */}
         <Route path="/" exact element={<Home/>} />
@@ -34,8 +83,32 @@ function App () {
         {/* Operation Path */}
         <Route path='/login_operator_account' element={<LoginOperator/>}/>
       </Routes>
-    </Router>
-  )
+      <Modal show={showModal} onHide={() => setShowModal(false)}>
+          <Modal.Header closeButton>
+              <Modal.Title>Session Expiring Soon</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>Your session is about to expire. Would you like to extend your session?</Modal.Body>
+          <Modal.Footer>
+              <Button variant="secondary" onClick={() => setShowModal(false)}>
+                  Close
+              </Button>
+              <Button variant="primary" onClick={extendSession}>
+                  Extend Session
+              </Button>
+          </Modal.Footer>
+      </Modal>
+    </div>
+  );
 }
 
-export default App;
+function AppWrapper() {
+  return (
+      <Router>
+          <App />
+      </Router>
+  );
+}
+
+ReactDOM.render(<AppWrapper />, document.getElementById('root'));
+
+export default AppWrapper;
