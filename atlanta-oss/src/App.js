@@ -64,7 +64,7 @@ function App () {
         if (location.pathname !== '/' && location.pathname !== '/login_operator_account' && location.pathname !== '/request_form' ) {
           setShowModal(true);
         }
-      }, expirationTime - 300000); // Show modal 1 minute before expiration
+      }, expirationTime - 300000); // Show modal 5 minute before expiration
 
       return () => clearTimeout(timer);
     }
