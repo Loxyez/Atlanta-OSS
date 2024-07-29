@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
-import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useNavigate, useLocation } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
 import config from './utils/config';
@@ -16,10 +16,30 @@ import PageNotFound from './components/alert-page/PageNotFound';
 
 import ProtectedRoute from './components/protectedRoute/protectedRoute';
 
+function SessionExpirationModal({show, handleExtendSession, handleClose }){
+  return (
+    <Modal show={show} onHide={handleClose}>
+          <Modal.Header closeButton>
+              <Modal.Title>Session Expiring Soon</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>Your session is about to expire. Would you like to extend your session?</Modal.Body>
+          <Modal.Footer>
+              <Button variant="secondary" onClick={handleClose}>
+                  ปิด
+              </Button>
+              <Button variant="primary" onClick={handleExtendSession}>
+                  ฉันยังอยู่/ยังใช้งานอยู่
+              </Button>
+          </Modal.Footer>
+      </Modal>
+  )
+}
+
 function App () {
 
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const parseJwt = (token) => {
     try {
@@ -34,6 +54,8 @@ function App () {
     }
   };
 
+  const handleClose = () => setShowModal(false);
+
   useEffect(() => {
     const token = localStorage.getItem('token');
     if(token) {
@@ -41,12 +63,14 @@ function App () {
       const expirationTime = decodedToken.exp * 1000 - Date.now();
 
       const timer = setTimeout(() => {
+        if (location.pathname !== '/' && location.pathname !== '/login_operator_account') {
           setShowModal(true);
+        }
       }, expirationTime - 60000); // Show modal 1 minute before expiration
 
       return () => clearTimeout(timer);
     }
-  }, []);
+  }, [location]);
 
   const extendSession = async () => {
     try {
@@ -83,20 +107,11 @@ function App () {
         {/* Operation Path */}
         <Route path='/login_operator_account' element={<LoginOperator/>}/>
       </Routes>
-      <Modal show={showModal} onHide={() => setShowModal(false)}>
-          <Modal.Header closeButton>
-              <Modal.Title>Session Expiring Soon</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>Your session is about to expire. Would you like to extend your session?</Modal.Body>
-          <Modal.Footer>
-              <Button variant="secondary" onClick={() => setShowModal(false)}>
-                  Close
-              </Button>
-              <Button variant="primary" onClick={extendSession}>
-                  Extend Session
-              </Button>
-          </Modal.Footer>
-      </Modal>
+      <SessionExpirationModal
+        show={showModal}
+        handleExtendSession={extendSession}
+        handleClose={handleClose}
+      />
     </div>
   );
 }
