@@ -13,6 +13,10 @@ export default function CustomNavbar() {
                             <NavDropdown.Item href="/request_form"> ส่งคำร้องขอบัญชีเข้าใช้ระบบ</NavDropdown.Item>
                             <NavDropdown.Item href="#" disabled> ส่งคำร้องขอ ลากิจ/ลาอื่นๆ</NavDropdown.Item>
                         </NavDropdown>
+                        <Navbar title="test"></Navbar>
+                    </Nav>
+                    <Nav>
+                        <Nav.Link href="/login" className="text-white">เข้าสู่ระบบ</Nav.Link>
                     </Nav>
                 </Navbar.Collapse>
             </Container>
