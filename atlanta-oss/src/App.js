@@ -24,9 +24,6 @@ function SessionExpirationModal({show, handleExtendSession, handleClose }){
           </Modal.Header>
           <Modal.Body>Your session is about to expire. Would you like to extend your session?</Modal.Body>
           <Modal.Footer>
-              <Button variant="secondary" onClick={handleClose}>
-                  ปิด
-              </Button>
               <Button variant="primary" onClick={handleExtendSession}>
                   ฉันยังอยู่/ยังใช้งานอยู่
               </Button>
@@ -38,6 +35,7 @@ function SessionExpirationModal({show, handleExtendSession, handleClose }){
 function App () {
 
   const [showModal, setShowModal] = useState(false);
+  const [isTokenExpired, setIsTokenExpired] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -66,7 +64,7 @@ function App () {
         if (location.pathname !== '/' && location.pathname !== '/login_operator_account' && location.pathname !== '/request_form' ) {
           setShowModal(true);
         }
-      }, expirationTime - 60000); // Show modal 1 minute before expiration
+      }, expirationTime - 300000); // Show modal 1 minute before expiration
 
       return () => clearTimeout(timer);
     }
@@ -81,12 +79,20 @@ function App () {
         });
         localStorage.setItem('token', res.data.token);
         setShowModal(false);
-        window.location.reload(); // Reload to reset the timer
+        window.location.reload();
     } catch (err) {
         console.error('Error extending session:', err);
         navigate('/unauthorized');
+        setIsTokenExpired(true);
     }
   }
+
+  useEffect(() => {
+    if (isTokenExpired) {
+      localStorage.removeItem('token');
+      navigate('/');
+    }
+  }, [isTokenExpired, navigate]);
 
   return (
     <div>
