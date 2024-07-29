@@ -43,11 +43,17 @@ function App () {
     try {
       const base64Url = token.split('.')[1];
       const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-      }).join(''));
+      const jsonPayload = decodeURIComponent(
+          atob(base64)
+              .split('')
+              .map(function (c) {
+                  return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+              })
+              .join('')
+      );
       return JSON.parse(jsonPayload);
     } catch (e) {
+      console.error("Invalid token format", e);
       return null;
     }
   };
@@ -65,7 +71,7 @@ function App () {
         if (location.pathname !== '/' && location.pathname !== '/login_operator_account' && location.pathname !== '/request_form' ) {
           setShowModal(true);
         }
-      }, expirationTime - 300000); // Show modal 1 minute before expiration
+      }, expirationTime - 300000); // Show modal 5 minute before expiration
 
       return () => clearTimeout(timer);
     }
