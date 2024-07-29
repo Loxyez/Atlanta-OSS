@@ -20,9 +20,9 @@ function SessionExpirationModal({show, handleExtendSession, handleClose }){
   return (
     <Modal show={show} onHide={handleClose}>
           <Modal.Header closeButton>
-              <Modal.Title>Session Expiring Soon</Modal.Title>
+              <Modal.Title>เซสชั่นกำลังจะหมดอายุ</Modal.Title>
           </Modal.Header>
-          <Modal.Body>Your session is about to expire. Would you like to extend your session?</Modal.Body>
+          <Modal.Body>เซสชั่นกำลังจะหมดอายุในอีก 5 นาทีคุณต้องการต่อ เซสชั่น หรือไม่?</Modal.Body>
           <Modal.Footer>
               <Button variant="primary" onClick={handleExtendSession}>
                   ฉันยังอยู่/ยังใช้งานอยู่
