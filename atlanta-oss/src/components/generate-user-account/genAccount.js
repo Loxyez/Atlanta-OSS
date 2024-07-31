@@ -5,6 +5,8 @@ import { Spinner } from 'react-bootstrap';
 import CustomNavbar from '../navigation-bar/navbar';
 import SuccessModal from '../Modal/SuccessModal';
 import ErrorModal from '../Modal/ErrorModel';
+import paginationFactory from 'react-bootstrap-table2-paginator';
+import BootstrapTable from 'react-bootstrap-table-next';
 
 export default function CreateAccount() {
     const [request, setRequests] = useState([]);
@@ -140,12 +142,41 @@ export default function CreateAccount() {
         setShowErrorModal(false);
     };
 
+    const dateFormatter = (cell, row) => {
+        const date = new Date(cell);
+        return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+    };
+
+    const columns = [
+        { dataField: 'ticketid', text: 'Ticket ID'},
+        { dataField: 'uid', text: 'UID'},
+        { dataField: 'email', text: 'Email'},
+        { dataField: 'tel', text: 'Telephone'},
+        { dataField: 'role', text: 'Role'},
+        { dataField: 'reason', text: 'Reason'},
+        { dataField: 'status', text: 'Status'},
+        { dataField: 'created_at', text: 'Craeted', formatter: dateFormatter}
+    ];
+
+    const paginationOptions = {
+        sizePerPage: 10,
+        totalSize: request.length,
+        showTotal: true,
+        paginationSize: 5,
+    };
+
     return (
         <div>
             <CustomNavbar/>
             <div className='container mt-5'>
                 <h1>Create User Account</h1>
                 <p>For operator only this operation allow generate user account for access the one stop service.</p>
+                <BootstrapTable
+                    keyField='ticketid'
+                    data={request}
+                    columns={columns}
+                    pagination={paginationFactory(paginationOptions)}
+                />
                 <hr/>
                 <h5>Ticket Detail</h5>
                 <form>
