@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
 import config from '../../utils/config';
 import { Spinner } from 'react-bootstrap';
 import CustomNavbar from '../navigation-bar/navbar';
 import SuccessModal from '../Modal/SuccessModal';
 import ErrorModal from '../Modal/ErrorModel';
-import paginationFactory from 'react-bootstrap-table2-paginator';
-import BootstrapTable from 'react-bootstrap-table-next';
+import { useTable, usePagination } from 'react-table';
+import { Table, Container, Pagination} from 'react-bootstrap';
 
 export default function CreateAccount() {
     const [request, setRequests] = useState([]);
@@ -147,36 +147,70 @@ export default function CreateAccount() {
         return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
     };
 
-    const columns = [
-        { dataField: 'ticketid', text: 'Ticket ID'},
-        { dataField: 'uid', text: 'UID'},
-        { dataField: 'email', text: 'Email'},
-        { dataField: 'tel', text: 'Telephone'},
-        { dataField: 'role', text: 'Role'},
-        { dataField: 'reason', text: 'Reason'},
-        { dataField: 'status', text: 'Status'},
-        { dataField: 'created_at', text: 'Craeted', formatter: dateFormatter}
-    ];
+    const columns = useMemo(() => [
+        { Header: 'Ticket ID', accessor: 'ticketid' },
+        { Header: 'UID', accessor: 'uid' },
+        { Header: 'Email', accessor: 'email' },
+        { Header: 'Telephone', accessor: 'tel' },
+        { Header: 'Role', accessor: 'role' },
+        { Header: 'Reason', accessor: 'reason' },
+        { Header: 'Status', accessor: 'status' },
+        { Header: 'Created', accessor: 'created_at', Cell: ({ value }) => new Date(value).toLocaleString() }
+    ], []);
 
-    const paginationOptions = {
-        sizePerPage: 10,
-        totalSize: request.length,
-        showTotal: true,
-        paginationSize: 5,
-    };
-
+    const {
+        getTableProps,
+        getTableBodyProps,
+        headerGroups,
+        page,
+        nextPage,
+        previousPage,
+        canNextPage,
+        canPreviousPage,
+        pageOptions,
+        gotoPage,
+        state: { pageIndex },
+        prepareRow
+    } = useTable({ columns, data: request, initialState: { pageIndex: 0 } }, usePagination);
+    
     return (
         <div>
             <CustomNavbar/>
             <div className='container mt-5'>
                 <h1>Create User Account</h1>
                 <p>For operator only this operation allow generate user account for access the one stop service.</p>
-                <BootstrapTable
-                    keyField='ticketid'
-                    data={request}
-                    columns={columns}
-                    pagination={paginationFactory(paginationOptions)}
-                />
+                <Table striped bordered hover responsive {...getTableProps()} className="mt-3">
+                    <thead>
+                        {headerGroups.map(headerGroup => (
+                            <tr {...headerGroup.getHeaderGroupProps()}>
+                                {headerGroup.headers.map(column => (
+                                    <th {...column.getHeaderProps()}>{column.render('Header')}</th>
+                                ))}
+                            </tr>
+                        ))}
+                    </thead>
+                    <tbody {...getTableBodyProps()}>
+                        {page.map(row => {
+                            prepareRow(row);
+                            return (
+                                <tr {...row.getRowProps()}>
+                                    {row.cells.map(cell => (
+                                        <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
+                                    ))}
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </Table>
+                <Pagination className="justify-content-center mt-4">
+                    <Pagination.Prev onClick={() => previousPage()} disabled={!canPreviousPage} />
+                    {pageOptions.map(pageNumber => (
+                        <Pagination.Item key={pageNumber} active={pageNumber === pageIndex} onClick={() => gotoPage(pageNumber)}>
+                            {pageNumber + 1}
+                        </Pagination.Item>
+                    ))}
+                    <Pagination.Next onClick={() => nextPage()} disabled={!canNextPage} />
+                </Pagination>
                 <hr/>
                 <h5>Ticket Detail</h5>
                 <form>
