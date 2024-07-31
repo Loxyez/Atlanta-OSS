@@ -77,6 +77,45 @@ body {
     border-color: #0056b3 !important;
 }
 
+.lead {
+    font-size: 1.25rem;
+    font-weight: 300;
+}
+
+.table {
+    margin-top: 1.5rem;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid #ddd;
+}
+
+.table th,
+.table td {
+    padding: 0.75rem;
+    vertical-align: top;
+    border-top: 1px solid #ddd;
+}
+
+.table thead th {
+    vertical-align: bottom;
+    border-bottom: 2px solid #ddd;
+}
+
+.table tbody + tbody {
+    border-top: 2px solid #ddd;
+}
+
+.table .table {
+    background-color: #fff;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 1.5rem;
+}
+
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .container {
