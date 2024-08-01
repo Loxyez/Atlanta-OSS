@@ -13,7 +13,7 @@ import LoginOperator from './components/login/login_operator';
 import CreateAccount from './components/generate-user-account/genAccount';
 import Unauthenticated from './components/alert-page/Unauthenticated';
 import PageNotFound from './components/alert-page/PageNotFound';
-
+import Login from './components/login/login';
 import ProtectedRoute from './components/protectedRoute/protectedRoute';
 
 function SessionExpirationModal({show, handleExtendSession, handleClose }){
@@ -113,6 +113,7 @@ function App () {
         <Route path="*" element={<PageNotFound />} />
         {/* Operation Path */}
         <Route path='/login_operator_account' element={<LoginOperator/>}/>
+        <Route path='/login' element={<Login/>}/>
       </Routes>
       <SessionExpirationModal
         show={showModal}
