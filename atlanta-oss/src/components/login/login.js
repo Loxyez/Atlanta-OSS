@@ -7,7 +7,7 @@ import CustomNavbar from '../navigation-bar/navbar';
 import { FaUserCircle, FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 import './login.css';
 
-export default function Login() {
+export default function LoginOperator() {
     const [credentials, setCredentials] = useState({ user_name: '', user_password: '' });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -100,11 +100,11 @@ export default function Login() {
                                         checked={rememberMe}
                                         onChange={() => setRememberMe(!rememberMe)}
                                     />
-                                    <label className="form-check-label" htmlFor="rememberMe" style={{ color: rememberMe ? '#5cb85c' : '#000' }}>
+                                    <label className="form-check-label" htmlFor="rememberMe">
                                         Remember Me
                                     </label>
                                 </div>
-                                <a href="/forgot_password" className="text-decoration-none forgot-password">
+                                <a href="/forget_password" className="text-decoration-none forget-password">
                                     Forget Password
                                 </a>
                             </div>
@@ -112,9 +112,6 @@ export default function Login() {
                             <button type="submit" className="btn btn-primary" disabled={loading}>
                                 {loading ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> : 'Login'}
                             </button>
-                            <div className="d-flex justify-content-center align-items-center mt-3">
-                                <span>Don't have any account? <a href="/sign_up" className="text-decoration-none sign-up">Sign Up</a></span>
-                            </div>
                         </form>
                     </div>
                 </div>

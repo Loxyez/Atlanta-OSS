@@ -7,7 +7,7 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    height: 90vh; /* ลดความสูงลงเพื่อเลื่อนขึ้น */
 }
 
 .login-card {
@@ -72,12 +72,7 @@ body {
 }
 
 .form-check-label {
-    color: #000;
     transition: color 0.2s;
-}
-
-.form-check-input:checked ~ .form-check-label {
-    color: #5cb85c;
 }
 
 .alert-danger {

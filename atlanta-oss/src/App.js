@@ -14,6 +14,7 @@ import CreateAccount from './components/generate-user-account/genAccount';
 import Unauthenticated from './components/alert-page/Unauthenticated';
 import PageNotFound from './components/alert-page/PageNotFound';
 import Login from './components/login/login';
+import ForgotPassword from './components/login/forget_password';
 import ProtectedRoute from './components/protectedRoute/protectedRoute';
 
 function SessionExpirationModal({show, handleExtendSession, handleClose }){
@@ -114,6 +115,7 @@ function App () {
         {/* Operation Path */}
         <Route path='/login_operator_account' element={<LoginOperator/>}/>
         <Route path='/login' element={<Login/>}/>
+        <Route path='/forget_password' element={<ForgotPassword/>}/>
       </Routes>
       <SessionExpirationModal
         show={showModal}
