@@ -112,9 +112,40 @@ body {
 .pagination {
     display: flex;
     justify-content: center;
-    margin-top: 1.5rem;
+    margin: 20px 0;
 }
 
+.pagination button {
+    margin: 0 2px;
+    padding: 10px 15px;
+    border: 1px solid #007bff;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+}
+
+.pagination button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.pagination input {
+    width: 50px;
+    text-align: center;
+}
+
+.pagination select {
+    margin-left: 10px;
+}
+
+.pagination .active {
+    background-color: #007bff;
+    color: white;
+}
+
+.pagination .dots {
+    margin: 0 5px;
+}
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
