@@ -5,7 +5,7 @@ import CustomNavbar from '../navigation-bar/navbar';
 import { Spinner } from 'react-bootstrap';
 import { FaEnvelope, FaArrowLeft } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom'; // เพิ่มการนำทาง
-import './forget_password.css'; // Make sure this file exists in the correct path
+import './css/forget_password.css'; // Make sure this file exists in the correct path
 
 export default function ForgotPassword() {
     const [email, setEmail] = useState('');

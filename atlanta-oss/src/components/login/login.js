@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { Spinner } from 'react-bootstrap';
 import CustomNavbar from '../navigation-bar/navbar';
 import { FaUserCircle, FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
-import './login.css';
+import './css/login.css';
 
 export default function LoginOperator() {
     const [credentials, setCredentials] = useState({ user_name: '', user_password: '' });
