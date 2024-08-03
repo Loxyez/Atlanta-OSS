@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Analytics } from "@vercel/analytics/react";
 import ReactDOM from 'react-dom';
 import { BrowserRouter as Router, Route, Routes, useNavigate, useLocation } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -62,7 +63,12 @@ function App () {
       const expirationTime = decodedToken.exp * 1000 - Date.now();
 
       const timer = setTimeout(() => {
-        if (location.pathname !== '/' && location.pathname !== '/login_operator_account' && location.pathname !== '/request_form' ) {
+        if (location.pathname !== '/' 
+          && location.pathname !== '/login_operator_account' 
+          && location.pathname !== '/request_form' 
+          && location.pathname !== '/login'
+          && location.pathname !== '/forget_password'
+        ) {
           setShowModal(true);
         }
       }, expirationTime - 300000); // Show modal 5 minute before expiration
@@ -98,6 +104,7 @@ function App () {
 
   return (
     <div>
+      <Analytics/>
       <Routes>
         {/* Normal Path */}
         <Route path="/" exact element={<Home/>} />
@@ -112,7 +119,7 @@ function App () {
         <Route path="/unauthorized" element={<Unauthenticated />} />
         {/* Page Not Found */}
         <Route path="*" element={<PageNotFound />} />
-        {/* Operation Path */}
+        {/* Operation Login Path */}
         <Route path='/login_operator_account' element={<LoginOperator/>}/>
         <Route path='/login' element={<Login/>}/>
         <Route path='/forget_password' element={<ForgotPassword/>}/>
