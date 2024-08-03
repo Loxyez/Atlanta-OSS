@@ -1,15 +1,12 @@
 ### Description
-
 <!-- Describe the purpose of this merge request and what changes are being proposed. -->
 
 ### Related Issues
-
 <!-- List any related issues or tasks that this merge request addresses. 
 Use keywords like "Closes", "Fixes", or "Resolves" to automatically close the issue when the MR is merged. -->
-Example: Closes #123, Fixes #456
+Issue: Closes #123, Fixes #456
 
 ### Changes Made
-
 <!-- Provide a detailed list of changes made in this merge request.-->
 Example:
 - Added a new component for user profiles
@@ -17,11 +14,9 @@ Example:
 - Updated the README file with new instructions
 
 ### Screenshots (if applicable)
-
 <!-- Include screenshots or GIFs to help reviewers understand the changes. -->
 
 ### Steps to Test
-
 <!-- Provide step-by-step instructions for testing the changes. -->
 Example:
 1. Pull the branch
@@ -42,7 +37,4 @@ Example:
 <!-- Provide any additional context or information that might be useful for reviewers. -->
 
 ### Reviewer(s)
-
-<!-- Tag the appropriate reviewers for this merge request.
-Example: @username1 @username2 -->
-@Loxyez
+@Loxyez @PhetMu
