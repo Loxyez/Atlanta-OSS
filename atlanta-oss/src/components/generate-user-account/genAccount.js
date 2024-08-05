@@ -31,9 +31,14 @@ export default function CreateAccount() {
 
     useEffect(() => {
         const fetchDataRequest = async () => {
+            const token = localStorage.getItem('token');
             try {
                 setLoadingOther(true);
-                const res = await axios.get(`${config.apiBaseUrl}/requests_form`);
+                const res = await axios.get(`${config.apiBaseUrl}/requests/open_tickets`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
                 if (Array.isArray(res.data)) {
                     setRequests(res.data);
                 } else {
@@ -48,8 +53,13 @@ export default function CreateAccount() {
         };
 
         const fetchDataRoles = async () => {
+            const token = localStorage.getItem('token');
             try {
-                const res = await axios.get(`${config.apiBaseUrl}/user_roles`);
+                const res = await axios.get(`${config.apiBaseUrl}/users/user_roles`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
                 setUserRole(res.data);
             } catch (error) {
                 console.error('Error fetching the user roles',  error);
@@ -60,7 +70,7 @@ export default function CreateAccount() {
             const token = localStorage.getItem('token');
             try {
                 setLoadingAccount(true);
-                const res = await axios.get(`${config.apiBaseUrl}/user_accounts`, {
+                const res = await axios.get(`${config.apiBaseUrl}/users/user_accounts`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -98,7 +108,7 @@ export default function CreateAccount() {
             return;
         }
         try {
-            const res = await axios.post(`${config.apiBaseUrl}/create_user`, user, {
+            const res = await axios.post(`${config.apiBaseUrl}/users/create_user`, user, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -129,9 +139,14 @@ export default function CreateAccount() {
     const handleTicketChange = async (e) => {
         const ticketID = e.target.value;
         setTicketID(ticketID);
+        const token = localStorage.getItem('token');
         if (ticketID !== '-' && ticketID !== 'N/A') {
             try {
-                const res = await axios.get(`${config.apiBaseUrl}/request_form/${ticketID}`);
+                const res = await axios.get(`${config.apiBaseUrl}/requests/${ticketID}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
                 setSelectedRequest(res.data);
             } catch (error) {
                 console.error('Error fetching the selected request details', error);
@@ -150,7 +165,7 @@ export default function CreateAccount() {
             return;
         }
         try {
-            const res = await axios.put(`${config.apiBaseUrl}/request_form/${ticketID}/status`, {status}, {
+            const res = await axios.put(`${config.apiBaseUrl}/requests/${ticketID}/status`, {status}, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -177,7 +192,7 @@ export default function CreateAccount() {
     const sendEmail = async (email, user_name, user_password) => {
         try {
             const token = localStorage.getItem('token');
-            const res = await axios.post(`${config.apiBaseUrl}/send_email`, {
+            const res = await axios.post(`${config.apiBaseUrl}/users/send_email`, {
                 email, user_name, user_password
             }, {
                 headers: { 'Authorization': `Bearer ${token}` }
