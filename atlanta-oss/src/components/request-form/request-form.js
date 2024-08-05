@@ -26,7 +26,7 @@ export default function RequestForm () {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const res = await axios.get(`${config.apiBaseUrl}/user_roles`);
+                const res = await axios.get(`${config.apiBaseUrl}/users/user_roles`);
                 setUserRole(res.data);
             } catch (error) {
                 console.error('Error fetching the user roles',  error);
@@ -66,7 +66,7 @@ export default function RequestForm () {
         }
 
         try {
-            const res = await axios.post(`${config.apiBaseUrl}/submit_request_form`, newRequest);
+            const res = await axios.post(`${config.apiBaseUrl}/requests/submit_request_form`, newRequest);
             setFormData({
                 ticketid: '',
                 uid: '',
