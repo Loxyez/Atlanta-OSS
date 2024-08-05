@@ -77,6 +77,76 @@ body {
     border-color: #0056b3 !important;
 }
 
+.lead {
+    font-size: 1.25rem;
+    font-weight: 300;
+}
+
+.table {
+    margin-top: 1.5rem;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid #ddd;
+}
+
+.table th,
+.table td {
+    padding: 0.75rem;
+    vertical-align: top;
+    border-top: 1px solid #ddd;
+}
+
+.table thead th {
+    vertical-align: bottom;
+    border-bottom: 2px solid #ddd;
+}
+
+.table tbody + tbody {
+    border-top: 2px solid #ddd;
+}
+
+.table .table {
+    background-color: #fff;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.pagination button {
+    margin: 0 2px;
+    padding: 10px 15px;
+    border: 1px solid #007bff;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+}
+
+.pagination button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.pagination input {
+    width: 50px;
+    text-align: center;
+}
+
+.pagination select {
+    margin-left: 10px;
+}
+
+.pagination .active {
+    background-color: #007bff;
+    color: white;
+}
+
+.pagination .dots {
+    margin: 0 5px;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .container {

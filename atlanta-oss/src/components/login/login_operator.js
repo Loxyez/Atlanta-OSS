@@ -19,7 +19,7 @@ export default function LoginOperator() {
         e.preventDefault();
         setLoading(true);
         try {
-            const res = await axios.post(`${config.apiBaseUrl}/operator_login`, credentials);
+            const res = await axios.post(`${config.apiBaseUrl}/auth/operator_login`, credentials);
             if (res.data.success){
                 localStorage.setItem('token', res.data.token);
                 navigate('/create_user_account');
@@ -74,3 +74,10 @@ export default function LoginOperator() {
         </div>
     )
 }
+
+
+
+
+
+
+
