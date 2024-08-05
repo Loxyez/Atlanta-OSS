@@ -79,7 +79,7 @@ function App () {
 
   const extendSession = async () => {
     try {
-        const res = await axios.post(`${config.apiBaseUrl}/extend_session`, {}, {
+        const res = await axios.post(`${config.apiBaseUrl}/auth/extend_session`, {}, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
