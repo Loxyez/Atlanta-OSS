@@ -6,6 +6,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { Spinner } from 'react-bootstrap';
 import SuccessModal from '../Modal/SuccessModal';
 import ErrorModal from '../Modal/ErrorModel';
+import './request-form.css'; // Import the CSS file
 
 export default function RequestForm () {
     const [userRole, setUserRole] = useState([]);
@@ -106,7 +107,7 @@ export default function RequestForm () {
                             <label htmlFor='uid'>รหัสพนักงาน</label>
                             <input
                                 type='text'
-                                className='form-control'
+                                className='form-control form-control-custom'
                                 id='uid'
                                 name='uid'
                                 value={formData.uid}
@@ -118,7 +119,7 @@ export default function RequestForm () {
                             <label htmlFor="email">อีเมล</label>
                             <input
                                 type='email'
-                                className='form-control'
+                                className='form-control form-control-custom'
                                 id='email'
                                 name='email'
                                 value={formData.email}
@@ -132,7 +133,7 @@ export default function RequestForm () {
                             <label htmlFor='tel'>หมายเลขโทรศัพท์</label>
                             <input
                                 type='text'
-                                className='form-control'
+                                className='form-control form-control-custom'
                                 id='tel'
                                 name='tel'
                                 value={formData.tel}
@@ -142,7 +143,7 @@ export default function RequestForm () {
                         </div>
                         <div className='col-sm-6'>
                             <label htmlFor='role'>ตำแหน่ง</label>
-                            <select className='form-select' id="RoleCategory" name="RoleCategory" onChange={(e) => {
+                            <select className='form-select form-control-custom' id="RoleCategory" name="RoleCategory" onChange={(e) => {
                                 setFormData({ ...formData, role: e.target.value});
                             }} required>
                                 <option value="-">-</option>
@@ -159,7 +160,7 @@ export default function RequestForm () {
                     <div className='form-group'>
                         <label htmlFor="reason">เหตุผล</label>
                         <textarea
-                            className='form-control'
+                            className='form-control form-control-custom'
                             id='reason'
                             name='reason'
                             value={formData.reason}

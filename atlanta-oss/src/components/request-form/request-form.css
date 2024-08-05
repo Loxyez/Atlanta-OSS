@@ -1,0 +1,26 @@
+/* request-form.css */
+.form-control-custom {
+    border: 2px solid #ced4da;
+    border-radius: 0.25rem;
+    padding: 0.5rem; /* ลด padding เพื่อลดขนาดกล่องข้อความ */
+    transition: border-color 0.3s;
+}
+
+.form-control-custom:focus {
+    border-color: #80bdff;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.form-select {
+    border: 2px solid #ced4da;
+    border-radius: 0.25rem;
+    padding: 0.5rem; /* ลด padding เพื่อลดขนาดกล่องข้อความ */
+    transition: border-color 0.3s;
+}
+
+.form-select:focus {
+    border-color: #80bdff;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
