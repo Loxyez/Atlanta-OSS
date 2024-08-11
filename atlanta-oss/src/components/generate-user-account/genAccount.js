@@ -7,6 +7,7 @@ import SuccessModal from '../Modal/SuccessModal';
 import ErrorModal from '../Modal/ErrorModel';
 import { useTable, usePagination, useSortBy } from 'react-table';
 import { Table, Button, Pagination} from 'react-bootstrap';
+import { jwtDecode } from 'jwt-decode';
 
 export default function CreateAccount() {
     const [request, setRequests] = useState([]);
@@ -18,6 +19,7 @@ export default function CreateAccount() {
         user_role: '',
         user_uid: '',
     });
+    const [userDetail, setUserDetail] = useState(null);
     const [userRole, setUserRole] = useState([]);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [showErrorModal, setShowErrorModal] = useState(false);
@@ -30,6 +32,22 @@ export default function CreateAccount() {
     const [loadingOther, setLoadingOther] = useState(false);
 
     useEffect(() => {
+
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+
+        if (token) {
+            try {
+                const decodedToken = jwtDecode(token);
+                const userData = {
+                    name: decodedToken.user_name,
+                    role: decodedToken.user_role
+                };
+                setUserDetail(userData);
+            } catch (err) {
+                console.error('Failed to decode token', err);
+            }
+        }
+
         const fetchDataRequest = async () => {
             const token = localStorage.getItem('token');
             try {
@@ -337,7 +355,7 @@ export default function CreateAccount() {
 
     return (
         <div>
-            <CustomNavbar/>
+            <CustomNavbar user={userDetail}/>
             <div className='container mt-5'>
                 <h1>Create User Account</h1>
                 <p>For operator only this operation allow generate user account for access the one stop service.</p>
