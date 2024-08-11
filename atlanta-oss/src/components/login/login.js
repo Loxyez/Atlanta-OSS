@@ -7,7 +7,7 @@ import CustomNavbar from '../navigation-bar/navbar';
 import { FaUserCircle, FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 import './css/login.css';
 
-export default function LoginOperator() {
+export default function Login() {
     const [credentials, setCredentials] = useState({ user_name: '', user_password: '' });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -22,12 +22,16 @@ export default function LoginOperator() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        setError(''); // Clear previous errors
+        setError('');
         try {
-            const res = await axios.post(`${config.apiBaseUrl}/operator_login`, credentials);
+            const res = await axios.post(`${config.apiBaseUrl}/auth/login`, credentials);
             if (res.data.success) {
-                localStorage.setItem('token', res.data.token);
-                navigate('/create_user_account');
+                if (rememberMe) {
+                    localStorage.setItem('token', res.data.token);
+                } else {
+                    sessionStorage.setItem('token', res.data.token);
+                }
+                navigate('/landing');
             } else {
                 setError(res.data.message);
             }
@@ -38,11 +42,12 @@ export default function LoginOperator() {
         }
     };
 
+    
+
     return (
         <div>
             <CustomNavbar />
             <div className="login-container">
-                <h1 className="mb-4">Login</h1>
                 <div className="card login-card">
                     <div className="card-body">
                         <div className="text-center mb-4">

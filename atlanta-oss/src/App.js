@@ -3,6 +3,7 @@ import { Analytics } from "@vercel/analytics/react";
 import ReactDOM from 'react-dom';
 import { BrowserRouter as Router, Route, Routes, useNavigate, useLocation } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import '@fortawesome/fontawesome-free/css/all.min.css';
 import axios from 'axios';
 import config from './utils/config';
 import Modal from 'react-bootstrap/Modal';
@@ -16,6 +17,7 @@ import Unauthenticated from './components/alert-page/Unauthenticated';
 import PageNotFound from './components/alert-page/PageNotFound';
 import Login from './components/login/login';
 import ForgotPassword from './components/login/forget_password';
+import LandingPage from './components/Landing/landing-page';
 import ProtectedRoute from './components/protectedRoute/protectedRoute';
 
 function SessionExpirationModal({show, handleExtendSession, handleClose }){
@@ -129,6 +131,11 @@ function App () {
         <Route path='/login_operator_account' element={<LoginOperator/>}/>
         <Route path='/login' element={<Login/>}/>
         <Route path='/forget_password' element={<ForgotPassword/>}/>
+        <Route path='/landing' element={
+          <ProtectedRoute>
+            <LandingPage/>
+          </ProtectedRoute>}
+        />
       </Routes>
       <SessionExpirationModal
         show={showModal}

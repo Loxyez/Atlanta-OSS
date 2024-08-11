@@ -6,7 +6,14 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 In the project directory, you can run:
 
-### `npm start`
+### `npm run start:local`
+
+To develop in local environment when developer want to develop API geteway from local core lambda
+
+### `npm run start:dev`
+
+To allow developer that want to implement UX/UI only
+
 
 Runs the app in the development mode.\
 Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
