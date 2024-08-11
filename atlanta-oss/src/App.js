@@ -3,6 +3,7 @@ import { Analytics } from "@vercel/analytics/react";
 import ReactDOM from 'react-dom';
 import { BrowserRouter as Router, Route, Routes, useNavigate, useLocation } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import '@fortawesome/fontawesome-free/css/all.min.css';
 import axios from 'axios';
 import config from './utils/config';
 import Modal from 'react-bootstrap/Modal';
