@@ -20,7 +20,7 @@ export default function ForgotPassword() {
         setMessage(''); // Clear previous messages
         setSuccess(false); // Clear previous success state
         try {
-            const response = await axios.post(`${config.apiBaseUrl}/forgot_password`, { email });
+            const response = await axios.post(`${config.apiBaseUrl}/auth/forget_password`, { email });
             if (response.data.success) {
                 setSuccess(true);
                 setMessage('Password reset link has been sent to your email.');
