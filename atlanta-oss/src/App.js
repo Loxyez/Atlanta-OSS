@@ -112,7 +112,7 @@ function App () {
         <Route path="/" exact element={<Home/>} />
         <Route path='/request_form' element={<RequestForm/>}/>
         <Route path='/create_user_account' element={
-          <ProtectedRoute> 
+          <ProtectedRoute allowedRoles={['operator']}> 
             <CreateAccount/> 
           </ProtectedRoute>}
         />
@@ -126,7 +126,7 @@ function App () {
         <Route path='/login' element={<Login/>}/>
         <Route path='/forget_password' element={<ForgotPassword/>}/>
         <Route path='/landing' element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={['Manager', 'Clerk', 'Engineer', 'Trainee', 'Developer', 'operator']}>
             <LandingPage/>
           </ProtectedRoute>}
         />
