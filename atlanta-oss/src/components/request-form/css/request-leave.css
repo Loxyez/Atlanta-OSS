@@ -1,0 +1,37 @@
+/* Custom Modal Styles for Responsiveness */
+.modal-dialog {
+    max-width: 90%;
+    width: 100%;
+}
+
+@media (min-width: 768px) {
+    .modal-dialog {
+        max-width: 600px;
+    }
+}
+
+@media (min-width: 992px) {
+    .modal-dialog {
+        max-width: 800px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .modal-dialog {
+        max-width: 900px;
+    }
+}
+
+/* Add a more distinct border to all input fields */
+.form-control {
+    border: 2px solid #ccc; /* Light grey border */
+    border-radius: 4px; /* Rounded corners */
+    padding: 8px; /* Some padding inside the input */
+}
+
+/* Change the border color on focus */
+.form-control:focus {
+    border-color: #007bff; /* Blue border on focus */
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Blue glow on focus */
+    outline: none; /* Remove the default outline */
+}

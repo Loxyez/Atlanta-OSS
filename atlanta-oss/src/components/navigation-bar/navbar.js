@@ -45,7 +45,7 @@ export default function CustomNavbar({ user }) {
                         </NavDropdown>
                         <NavDropdown title={<span className="text-white">แบบคำร้องขอ</span>} id="basic-nav-dropdown">
                             <NavDropdown.Item href="/request_form"> ส่งคำร้องขอบัญชีเข้าใช้ระบบ</NavDropdown.Item>
-                            <NavDropdown.Item href="#" disabled={!isLoggedIn}> ส่งคำร้องขอ ลากิจ/ลาอื่นๆ</NavDropdown.Item>
+                            <NavDropdown.Item href="/request_leave" disabled={!isLoggedIn}> ส่งคำร้องขอ ลากิจ/ลาอื่นๆ</NavDropdown.Item>
                         </NavDropdown>
                     </>
                 );
@@ -60,7 +60,7 @@ export default function CustomNavbar({ user }) {
                         </NavDropdown>
                         <NavDropdown title={<span className="text-white">แบบคำร้องขอ</span>} id="basic-nav-dropdown">
                             <NavDropdown.Item href="/request_form"> ส่งคำร้องขอบัญชีเข้าใช้ระบบ</NavDropdown.Item>
-                            <NavDropdown.Item href="#" disabled={!isLoggedIn}> ส่งคำร้องขอ ลากิจ/ลาอื่นๆ</NavDropdown.Item>
+                            <NavDropdown.Item href="/request_leave" disabled={!isLoggedIn}> ส่งคำร้องขอ ลากิจ/ลาอื่นๆ</NavDropdown.Item>
                         </NavDropdown>
                     </>
                 );
