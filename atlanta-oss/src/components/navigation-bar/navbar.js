@@ -9,9 +9,11 @@ export default function CustomNavbar() {
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [message, setMessage] = useState('');
     const [user, setUser] = useState(null);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     useEffect(() => {
         const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        setIsLoggedIn(!!token);
         if (token) {
             try {
                 const decoded = jwtDecode(token);
