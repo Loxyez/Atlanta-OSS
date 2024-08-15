@@ -20,6 +20,7 @@ import ForgotPassword from './components/login/forget_password';
 import LandingPage from './components/Landing/landing-page';
 import ProtectedRoute from './components/protectedRoute/protectedRoute';
 import LeaveRequest from './components/request-form/request-leave';
+import PublicRoute from './publicroute/PublicRoute';
 
 function SessionExpirationModal({show, handleExtendSession, handleClose }){
   return (
@@ -125,7 +126,11 @@ function App () {
         <Route path="*" element={<PageNotFound />} />
         {/* Operation Login Path */}
         <Route path='/login_operator_account' element={<LoginOperator/>}/>
-        <Route path='/login' element={<Login/>}/>
+        <Route path='/login' element={
+          <PublicRoute>
+            <Login />
+          </PublicRoute>} 
+        />
         <Route path='/forget_password' element={<ForgotPassword/>}/>
         <Route path='/landing' element={
           <ProtectedRoute allowedRoles={['Manager', 'Clerk', 'Engineer', 'Trainee', 'Developer', 'operator']}>

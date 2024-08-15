@@ -2,25 +2,39 @@ import React, { useEffect, useState } from "react";
 import { Navbar, Nav, NavDropdown, Container } from 'react-bootstrap';
 import { useNavigate } from "react-router-dom";
 import SuccessModal from "../Modal/SuccessModal";
+import { jwtDecode } from 'jwt-decode';
 
-export default function CustomNavbar({ user }) {
+export default function CustomNavbar() {
     const navigate = useNavigate();
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [message, setMessage] = useState('');
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [user, setUser] = useState(null);
 
     useEffect(() => {
         const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        setIsLoggedIn(!!token);
+        if (token) {
+            try {
+                const decoded = jwtDecode(token);
+                setUser({
+                    name: decoded.user_name || 'User',
+                    role: decoded.user_role || 'Guest'
+                });
+            } catch (error) {
+                console.error('Error decoding token:', error);
+                // If token is invalid, remove it
+                localStorage.removeItem('token');
+                sessionStorage.removeItem('token');
+            }
+        }
     }, []);
 
     // Handle logout
     const handleLogout = () => {
         localStorage.removeItem('token');
         sessionStorage.removeItem('token');
-        console.log("Logout")
         setMessage('ท่านได้ออกจากระบบเรียบร้อยแล้ว');
         setShowSuccessModal(true);
+        setUser(null);
     }
 
     const handleCloseModal = () => {
@@ -30,7 +44,6 @@ export default function CustomNavbar({ user }) {
 
     // Helper function to generate navigation items based on role
     const getNavItems = () => {
-        console.log(user)
         switch (user?.role) {
             case 'Manager':
             case 'operator':
@@ -41,7 +54,7 @@ export default function CustomNavbar({ user }) {
                             <NavDropdown.Item href="/task_list">รายชื่องาน</NavDropdown.Item>
                         </NavDropdown>
                         <NavDropdown title={<span className="text-white">จัดการสต๊อกสินค้า</span>} id="stock-dropdown">
-                            <NavDropdown.Item href="/stock_lsit">จัดการสต๊อก</NavDropdown.Item>
+                            <NavDropdown.Item href="/stock_list">จัดการสต๊อก</NavDropdown.Item>
                         </NavDropdown>
                         <NavDropdown title={<span className="text-white">แบบคำร้องขอ</span>} id="basic-nav-dropdown">
                             <NavDropdown.Item href="/request_form"> ส่งคำร้องขอบัญชีเข้าใช้ระบบ</NavDropdown.Item>
@@ -52,11 +65,11 @@ export default function CustomNavbar({ user }) {
             case 'Clerk':
                 return (
                     <>
-                        <NavDropdown title="จัดการระบบงาน" id="task-management-dropdown">
+                        <NavDropdown title={<span className="text-white">จัดการระบบงาน</span>} id="task-management-dropdown">
                             <NavDropdown.Item href="/task_list">รายชื่องาน</NavDropdown.Item>
                         </NavDropdown>
-                        <NavDropdown title="จัดการสต๊อกสินค้า" id="stock-dropdown">
-                            <NavDropdown.Item href="/stock_lsit">จัดการสต๊อก</NavDropdown.Item>
+                        <NavDropdown title={<span className="text-white">จัดการสต๊อกสินค้า</span>} id="stock-dropdown">
+                            <NavDropdown.Item href="/stock_list">จัดการสต๊อก</NavDropdown.Item>
                         </NavDropdown>
                         <NavDropdown title={<span className="text-white">แบบคำร้องขอ</span>} id="basic-nav-dropdown">
                             <NavDropdown.Item href="/request_form"> ส่งคำร้องขอบัญชีเข้าใช้ระบบ</NavDropdown.Item>
@@ -65,6 +78,7 @@ export default function CustomNavbar({ user }) {
                     </>
                 );
             default:
+                return null;
         }
     }
 
@@ -76,31 +90,29 @@ export default function CustomNavbar({ user }) {
                     <Navbar.Toggle aria-controls="basic-navbar-nav" />
                     <Navbar.Collapse id="basic-navbar-nav" className="justify-content-end">
                         <Nav className="ml-auto">
-                            <>
-                                {user ? (
-                                    <>
-                                        {getNavItems()}
-                                        <NavDropdown title={<span className="text-white"><i className="fas fa-user"></i> {user.name}</span>} id="user-dropdown">
-                                            <NavDropdown.Item href="/account">แก้ไขข้อมูล</NavDropdown.Item>
-                                            <NavDropdown.Item onClick={handleLogout}>ออกจากระบบ</NavDropdown.Item>
-                                        </NavDropdown>
-                                    </>
-                                ):(
-                                    <>
-                                        <NavDropdown title={<span className="text-white">แบบคำร้องขอ</span>} id="basic-nav-dropdown">
-                                            <NavDropdown.Item href="/request_form"> ส่งคำร้องขอบัญชีเข้าใช้ระบบ</NavDropdown.Item>
-                                            <NavDropdown.Item href="#" disabled> ส่งคำร้องขอ ลากิจ/ลาอื่นๆ</NavDropdown.Item>
-                                        </NavDropdown>
-                                        <Nav.Link href="/login" className="text-white">เข้าสู่ระบบ</Nav.Link>
-                                    </>
-                                )}
-                            </>
+                            {user ? (
+                                <>
+                                    {getNavItems()}
+                                    <NavDropdown title={<span className="text-white"><i className="fas fa-user"></i> {user.name}</span>} id="user-dropdown">
+                                        <NavDropdown.Item href="/account">แก้ไขข้อมูล</NavDropdown.Item>
+                                        <NavDropdown.Item onClick={handleLogout}>ออกจากระบบ</NavDropdown.Item>
+                                    </NavDropdown>
+                                </>
+                            ) : (
+                                <>
+                                    <NavDropdown title={<span className="text-white">แบบคำร้องขอ</span>} id="basic-nav-dropdown">
+                                        <NavDropdown.Item href="/request_form"> ส่งคำร้องขอบัญชีเข้าใช้ระบบ</NavDropdown.Item>
+                                        <NavDropdown.Item href="#" disabled> ส่งคำร้องขอ ลากิจ/ลาอื่นๆ</NavDropdown.Item>
+                                    </NavDropdown>
+                                    <Nav.Link href="/login" className="text-white">เข้าสู่ระบบ</Nav.Link>
+                                </>
+                            )}
                         </Nav>
                     </Navbar.Collapse>
                 </Container>
             </Navbar>
 
-            <SuccessModal show={showSuccessModal} handleClose={handleCloseModal} message={message}/>
+            <SuccessModal show={showSuccessModal} handleClose={handleCloseModal} message={message} />
         </>
     );
 }
