@@ -1,13 +1,34 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import CustomNavbar from '../navigation-bar/navbar';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import './LandingPage.css'; // เพิ่มไฟล์ CSS
+import './css/LandingPage.css'; // เพิ่มไฟล์ CSS
+import { jwtDecode } from 'jwt-decode';
 
 export default function LandingPage() {
+
+    const [user, setUser] = useState(null);
+
+    useEffect(() => {
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+
+        if (token) {
+            try {
+                const decodedToken = jwtDecode(token);
+                const userDetail = {
+                    name: decodedToken.user_name,
+                    role: decodedToken.user_role
+                };
+                setUser(userDetail);
+            } catch (err) {
+                console.error('Failed to decode token', err);
+            }
+        }
+    }, []);
+
     return (
         <div>
-            <CustomNavbar />
+            <CustomNavbar user={user}/>
             <div className="container-landing mt-5">
                 <h1>Welcome to Atlanta-OSS Management</h1>
                 <p>เลือกการดำเนินการที่ต้องการทำ:</p>
