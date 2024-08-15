@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import CustomNavbar from '../navigation-bar/navbar';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import './LandingPage.css'; // เพิ่มไฟล์ CSS
+import './css/LandingPage.css'; // เพิ่มไฟล์ CSS
 import { jwtDecode } from 'jwt-decode';
 
 export default function LandingPage() {

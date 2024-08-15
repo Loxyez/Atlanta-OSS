@@ -6,7 +6,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { Spinner } from 'react-bootstrap';
 import SuccessModal from '../Modal/SuccessModal';
 import ErrorModal from '../Modal/ErrorModel';
-import './request-form.css'; // Import the CSS file
+import './css/request-form.css'; // Import the CSS file
 
 export default function RequestForm () {
     const [userRole, setUserRole] = useState([]);
