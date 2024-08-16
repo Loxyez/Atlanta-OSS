@@ -1,5 +1,27 @@
 import React, { useEffect, useState } from "react";
-import { Navbar, Nav, NavDropdown, Container } from 'react-bootstrap';
+import { 
+    AppBar, 
+    Toolbar, 
+    IconButton, 
+    Typography, 
+    Menu, 
+    MenuItem, 
+    Button, 
+    Box, 
+    Drawer, 
+    List, 
+    ListItem,
+    ListItemIcon, 
+    ListItemText,
+    Divider } from '@mui/material';
+import { 
+    Menu as MenuIcon, 
+    AccountCircle, 
+    Work, 
+    Inventory, 
+    RequestPage,
+    Login, 
+    ExitToApp } from '@mui/icons-material';
 import { useNavigate } from "react-router-dom";
 import SuccessModal from "../Modal/SuccessModal";
 import { jwtDecode } from 'jwt-decode';
@@ -10,6 +32,8 @@ export default function CustomNavbar() {
     const [message, setMessage] = useState('');
     const [user, setUser] = useState(null);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [anchorEl, setAnchorEl] = useState(null);
+    const [mobileOpen, setMobileOpen] = useState(false);
 
     useEffect(() => {
         const token = localStorage.getItem('token') || sessionStorage.getItem('token');
@@ -29,6 +53,18 @@ export default function CustomNavbar() {
             }
         }
     }, []);
+
+    const handleMenuOpen = (event) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleMenuClose = () => {
+        setAnchorEl(null);
+    };
+
+    const handleDrawerToggle = () => {
+        setMobileOpen(!mobileOpen);
+    };
 
     // Handle logout
     const handleLogout = () => {
@@ -52,67 +88,119 @@ export default function CustomNavbar() {
             case 'Developer':
                 return (
                     <>
-                        <NavDropdown title={<span className="text-white">จัดการระบบงาน</span>} id="task-management-dropdown">
-                            <NavDropdown.Item href="/task_list">รายชื่องาน</NavDropdown.Item>
-                        </NavDropdown>
-                        <NavDropdown title={<span className="text-white">จัดการสต๊อกสินค้า</span>} id="stock-dropdown">
-                            <NavDropdown.Item href="/stock_list">จัดการสต๊อก</NavDropdown.Item>
-                        </NavDropdown>
-                        <NavDropdown title={<span className="text-white">แบบคำร้องขอ</span>} id="basic-nav-dropdown">
-                            <NavDropdown.Item href="/request_form"> ส่งคำร้องขอบัญชีเข้าใช้ระบบ</NavDropdown.Item>
-                            <NavDropdown.Item href="/request_leave" disabled={!isLoggedIn}> ส่งคำร้องขอ ลากิจ/ลาอื่นๆ</NavDropdown.Item>
-                        </NavDropdown>
+                        <ListItem button onClick={() => { navigate('/task_list'); setMobileOpen(false); }}>
+                            <ListItemIcon><Work /></ListItemIcon>
+                            <ListItemText primary="จัดการระบบงาน" />
+                        </ListItem>
+                        <ListItem button onClick={() => { navigate('/stock_list'); setMobileOpen(false); }}>
+                            <ListItemIcon><Inventory /></ListItemIcon>
+                            <ListItemText primary="จัดการสต๊อกสินค้า" />
+                        </ListItem>
+                        <ListItem button onClick={() => { navigate('/request_leave'); setMobileOpen(false); }} disabled={!isLoggedIn}>
+                            <ListItemIcon><RequestPage /></ListItemIcon>
+                            <ListItemText primary="ส่งคำร้องขอ ลากิจ/ลาอื่นๆ" />
+                        </ListItem>
                     </>
                 );
             case 'Clerk':
                 return (
                     <>
-                        <NavDropdown title={<span className="text-white">จัดการระบบงาน</span>} id="task-management-dropdown">
-                            <NavDropdown.Item href="/task_list">รายชื่องาน</NavDropdown.Item>
-                        </NavDropdown>
-                        <NavDropdown title={<span className="text-white">จัดการสต๊อกสินค้า</span>} id="stock-dropdown">
-                            <NavDropdown.Item href="/stock_list">จัดการสต๊อก</NavDropdown.Item>
-                        </NavDropdown>
-                        <NavDropdown title={<span className="text-white">แบบคำร้องขอ</span>} id="basic-nav-dropdown">
-                            <NavDropdown.Item href="/request_form"> ส่งคำร้องขอบัญชีเข้าใช้ระบบ</NavDropdown.Item>
-                            <NavDropdown.Item href="/request_leave" disabled={!isLoggedIn}> ส่งคำร้องขอ ลากิจ/ลาอื่นๆ</NavDropdown.Item>
-                        </NavDropdown>
+                        <ListItem button onClick={() => { navigate('/task_list'); setMobileOpen(false); }}>
+                            <ListItemIcon><Work /></ListItemIcon>
+                            <ListItemText primary="จัดการระบบงาน" />
+                        </ListItem>
+                        <ListItem button onClick={() => { navigate('/stock_list'); setMobileOpen(false); }}>
+                            <ListItemIcon><Inventory /></ListItemIcon>
+                            <ListItemText primary="จัดการสต๊อกสินค้า" />
+                        </ListItem>
+                        <ListItem button onClick={() => { navigate('/request_leave'); setMobileOpen(false); }} disabled={!isLoggedIn}>
+                            <ListItemIcon><RequestPage /></ListItemIcon>
+                            <ListItemText primary="ส่งคำร้องขอ ลากิจ/ลาอื่นๆ" />
+                        </ListItem>
                     </>
                 );
             default:
-                return null;
+                return (
+                    <>
+                        <ListItem button onClick={() => { navigate('/request_form'); setMobileOpen(false); }}>
+                            <ListItemIcon><RequestPage /></ListItemIcon>
+                            <ListItemText primary="ส่งคำร้องขอบัญชีเข้าใช้ระบบ" />
+                        </ListItem>
+                        <ListItem button onClick={() => { navigate('/login'); setMobileOpen(false); }}>
+                            <ListItemIcon><Login /></ListItemIcon>
+                            <ListItemText primary="เข้าสู่ระบบ" />
+                        </ListItem>
+                    </>
+                );
         }
-    }
+    };
+
+    const drawer = (
+        <Box sx={{ width: 250 }} onClick={handleDrawerToggle}>
+            <List>
+                {getNavItems()}
+                <Divider />
+                {user && (
+                    <>
+                        <ListItem button onClick={() => { navigate('/account'); setMobileOpen(false); }}>
+                            <ListItemIcon><AccountCircle /></ListItemIcon>
+                            <ListItemText primary="แก้ไขข้อมูล/บัญชี" />
+                        </ListItem>
+                        <ListItem button onClick={handleLogout}>
+                            <ListItemIcon><ExitToApp /></ListItemIcon>
+                            <ListItemText primary="ออกจากระบบ" />
+                        </ListItem>
+                    </>
+                )}
+            </List>
+        </Box>
+    );
 
     return (
         <>
-            <Navbar bg="primary" expand="lg">
-                <Container>
-                    <Navbar.Brand href="/" className="text-white">Atlanta-OSS</Navbar.Brand>
-                    <Navbar.Toggle aria-controls="basic-navbar-nav" />
-                    <Navbar.Collapse id="basic-navbar-nav" className="justify-content-end">
-                        <Nav className="ml-auto">
-                            {user ? (
-                                <>
-                                    {getNavItems()}
-                                    <NavDropdown title={<span className="text-white"><i className="fas fa-user"></i> {user.name}</span>} id="user-dropdown">
-                                        <NavDropdown.Item href="/account">แก้ไขข้อมูล</NavDropdown.Item>
-                                        <NavDropdown.Item onClick={handleLogout}>ออกจากระบบ</NavDropdown.Item>
-                                    </NavDropdown>
-                                </>
-                            ) : (
-                                <>
-                                    <NavDropdown title={<span className="text-white">แบบคำร้องขอ</span>} id="basic-nav-dropdown">
-                                        <NavDropdown.Item href="/request_form"> ส่งคำร้องขอบัญชีเข้าใช้ระบบ</NavDropdown.Item>
-                                        <NavDropdown.Item href="#" disabled> ส่งคำร้องขอ ลากิจ/ลาอื่นๆ</NavDropdown.Item>
-                                    </NavDropdown>
-                                    <Nav.Link href="/login" className="text-white">เข้าสู่ระบบ</Nav.Link>
-                                </>
-                            )}
-                        </Nav>
-                    </Navbar.Collapse>
-                </Container>
-            </Navbar>
+            <AppBar position="static">
+                <Toolbar>
+                    <IconButton
+                        edge="start"
+                        color="inherit"
+                        aria-label="menu"
+                        sx={{ display: { xs: 'block', md: 'none' }, mr: 2 }} // Hide on desktop (md and up)
+                        onClick={handleDrawerToggle}
+                    >
+                        <MenuIcon />
+                    </IconButton>
+                    <Typography  onClick={() => { navigate('/'); setMobileOpen(false); }} variant="h6" sx={{ flexGrow: 1 }}>
+                        Atlanta-OSS
+                    </Typography>
+                    <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
+                        {getNavItems()}
+                        {user && (
+                            <IconButton
+                                edge="end"
+                                color="inherit"
+                                aria-label="account"
+                                onClick={handleDrawerToggle}
+                            >
+                                <AccountCircle />
+                                <Typography variant="subtitle1" sx={{ ml: 1 }}>
+                                    {user.name}
+                                </Typography>
+                            </IconButton>
+                        )}
+                    </Box>
+                </Toolbar>
+            </AppBar>
+            <Drawer
+                variant="temporary"
+                anchor="left"
+                open={mobileOpen}
+                onClose={handleDrawerToggle}
+                ModalProps={{
+                    keepMounted: true,
+                }}
+            >
+                {drawer}
+            </Drawer>
 
             <SuccessModal show={showSuccessModal} handleClose={handleCloseModal} message={message} />
         </>

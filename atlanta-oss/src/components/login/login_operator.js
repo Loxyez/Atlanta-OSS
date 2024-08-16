@@ -2,7 +2,17 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import config from '../../utils/config';
 import { useNavigate } from 'react-router-dom';
-import { Spinner } from 'react-bootstrap';
+import {
+    Container,
+    Box,
+    TextField,
+    Button,
+    Typography,
+    CircularProgress,
+    Alert,
+    Card,
+    CardContent
+} from '@mui/material';
 import CustomNavbar from '../navigation-bar/navbar';
 
 export default function LoginOperator() {
@@ -35,42 +45,58 @@ export default function LoginOperator() {
 
     return (
         <div>
-            <CustomNavbar/>
-            <div className='container mt-5'>
-                <h1>Operator Login</h1>
-                <hr/>
-                <form onSubmit={handleSubmit}>
-                    <div className='form-group'>
-                        <label htmlFor='user_name'>User Name</label>
-                        <input
-                            type='text'
-                            className='form-control'
-                            id='user_name'
-                            name='user_name'
-                            value={credentials.user_name}
-                            onChange={handleChange}
-                            required
-                        />
-                    </div>
-                    <div className='form-group'>
-                        <label htmlFor='user_password'>Password</label>
-                        <input
-                            type='password'
-                            className='form-control'
-                            id='user_password'
-                            name='user_password'
-                            value={credentials.user_password}
-                            onChange={handleChange}
-                            required
-                        />
-                    </div>
-                    <hr/>
-                    {error && <div className="alert alert-danger">{error}</div>}
-                    <button type="submit" className="btn btn-primary" disabled={loading}>
-                        {loading ? <Spinner as="span" animation='border' size='sm' role='status' aria-hidden="true" /> : 'Login'}
-                    </button>
-                </form>
-            </div>
+            <CustomNavbar />
+            <Container maxWidth="sm" sx={{ mt: 5 }}>
+                <Card>
+                    <CardContent>
+                        <Typography variant="h4" gutterBottom>
+                            Operator Login
+                        </Typography>
+                        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
+                            <TextField
+                                fullWidth
+                                id="user_name"
+                                name="user_name"
+                                label="User Name"
+                                variant="outlined"
+                                margin="normal"
+                                value={credentials.user_name}
+                                onChange={handleChange}
+                                required
+                            />
+                            <TextField
+                                fullWidth
+                                id="user_password"
+                                name="user_password"
+                                label="Password"
+                                type="password"
+                                variant="outlined"
+                                margin="normal"
+                                value={credentials.user_password}
+                                onChange={handleChange}
+                                required
+                            />
+                            {error && (
+                                <Alert severity="error" sx={{ mt: 2 }}>
+                                    {error}
+                                </Alert>
+                            )}
+                            <Box sx={{ mt: 3, position: 'relative' }}>
+                                <Button
+                                    type="submit"
+                                    fullWidth
+                                    variant="contained"
+                                    color="primary"
+                                    disabled={loading}
+                                    sx={{ padding: '10px 0' }}
+                                >
+                                    {loading ? <CircularProgress size={24} color="inherit" /> : 'Login'}
+                                </Button>
+                            </Box>
+                        </Box>
+                    </CardContent>
+                </Card>
+            </Container>
         </div>
     )
 }
