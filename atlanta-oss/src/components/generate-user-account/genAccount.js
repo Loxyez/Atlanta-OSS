@@ -37,7 +37,7 @@ export default function CreateAccount() {
         user_name: '',
         user_password: '',
         user_role: '',
-        user_uid: '',
+        staff_cardid: '',
     });
     const [userDetail, setUserDetail] = useState(null);
     const [userRole, setUserRole] = useState([]);
@@ -172,7 +172,7 @@ export default function CreateAccount() {
                 user_name: '',
                 user_password: '',
                 user_role: '',
-                user_uid: '',
+                staff_cardid: '',
             });
 
             setTicketID('');
@@ -180,7 +180,7 @@ export default function CreateAccount() {
                 user_name: '',
                 user_password: '',
                 user_role: '',
-                user_uid: '',
+                staff_cardid: '',
             })
             setSelectedRequest(null);
             setShowSuccessModal(true);
@@ -469,13 +469,13 @@ export default function CreateAccount() {
                                 </Select>
                             </Grid>
                             <Grid item xs={12} sm={6}>
-                                <InputLabel style={{ color: 'black' }}>USER UID</InputLabel>
+                                <InputLabel style={{ color: 'black' }}>STAFF ID</InputLabel>
                                 <TextField
                                     fullWidth
-                                    label="User UID"
-                                    name="user_uid"
-                                    value={user.user_uid}
-                                    onChange={(e) => setUser({ ...user, user_uid: e.target.value })}
+                                    label="User STAFF ID"
+                                    name="staff_cardid"
+                                    value={user.staff_cardid}
+                                    onChange={(e) => setUser({ ...user, staff_cardid: e.target.value })}
                                     required
                                 />
                             </Grid>
@@ -499,7 +499,7 @@ export default function CreateAccount() {
                         <Table>
                             <TableHead>
                                 <TableRow>
-                                    <TableCell>UID</TableCell>
+                                    <TableCell>STAFF ID</TableCell>
                                     <TableCell>Username</TableCell>
                                     <TableCell>Role</TableCell>
                                     <TableCell>Created</TableCell>
@@ -517,8 +517,8 @@ export default function CreateAccount() {
                                     requestAccounts
                                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                                     .map((row) => (
-                                        <TableRow key={row.user_uid}>
-                                        <TableCell>{row.user_uid}</TableCell>
+                                        <TableRow key={row.staff_cardid}>
+                                        <TableCell>{row.staff_cardid}</TableCell>
                                         <TableCell>{row.user_name}</TableCell>
                                         <TableCell>{row.user_role}</TableCell>
                                         <TableCell>{new Date(row.created_at).toLocaleString()}</TableCell>
@@ -526,7 +526,7 @@ export default function CreateAccount() {
                                             <Button
                                             variant="contained"
                                             onClick={() =>
-                                                sendEmail(row.user_name, row.user_name, row.n_user_password)
+                                                sendEmail(row.user_name, row.user_name, row.user_ac_password)
                                             }
                                             >
                                             Send Email
