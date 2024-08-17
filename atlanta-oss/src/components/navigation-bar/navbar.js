@@ -13,6 +13,7 @@ import {
     ListItem,
     ListItemIcon, 
     ListItemText,
+    ListSubheader,
     Divider,
     useTheme,
     useMediaQuery 
@@ -27,7 +28,16 @@ import {
     ExitToApp,
     Dashboard,
     Assignment,
-    AccountBox
+    AccountBox,
+    Create,
+    Visibility,
+    Category,
+    Group,
+    ManageAccounts,
+    PersonAdd,
+    CalendarMonth,
+    Task,
+    PostAdd,
 } from '@mui/icons-material';
 import { useNavigate } from "react-router-dom";
 import SuccessModal from "../Modal/SuccessModal";
@@ -39,9 +49,13 @@ export default function CustomNavbar() {
     const [message, setMessage] = useState('');
     const [user, setUser] = useState(null);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [managementAnchorEl, setManagementAnchorEl] = useState(null);
+
+    const [taskManagementAnchorEl, setTaskMangementAnchorEl] = useState(null);
+    const [staffManagementAnchorEl, setstaffManagementAnchorEl] = useState(null);
+    const [stockManagementAnchorEl, setStockManagementAnchorEl] = useState(null);
     const [requestsAnchorEl, setRequestsAnchorEl] = useState(null);
     const [accountAnchorEl, setAccountAnchorEl] = useState(null);
+
     const [mobileOpen, setMobileOpen] = useState(false);
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -62,7 +76,6 @@ export default function CustomNavbar() {
                 sessionStorage.removeItem('token');
             }
         } else {
-            // If not logged in, default to guest
             setUser({
                 name: '',
                 role: 'Guest'
@@ -76,8 +89,14 @@ export default function CustomNavbar() {
 
     const handleMenuOpen = (event, menu) => {
         switch (menu) {
-            case 'management':
-                setManagementAnchorEl(event.currentTarget);
+            case 'stockManagement':
+                setStockManagementAnchorEl(event.currentTarget);
+                break;
+            case 'staffManagement':
+                setstaffManagementAnchorEl(event.currentTarget);
+                break;
+            case 'taskManagement':
+                setTaskMangementAnchorEl(event.currentTarget);
                 break;
             case 'requests':
                 setRequestsAnchorEl(event.currentTarget);
@@ -92,8 +111,14 @@ export default function CustomNavbar() {
 
     const handleMenuClose = (menu) => {
         switch (menu) {
-            case 'management':
-                setManagementAnchorEl(null);
+            case 'stockManagement':
+                setStockManagementAnchorEl(null);
+                break;
+            case 'staffManagement':
+                setstaffManagementAnchorEl(null);
+                break;
+            case 'taskManagement':
+                setTaskMangementAnchorEl(null);
                 break;
             case 'requests':
                 setRequestsAnchorEl(null);
@@ -124,21 +149,38 @@ export default function CustomNavbar() {
 
     // Role-based navigation groups
     const navGroups = {
-        management: {
+        stockManagement: {
             roles: ['Manager', 'operator', 'Developer', 'Clerk'],
             items: [
-                { label: 'จัดการระบบงาน', icon: <Work />, path: '/task_list' },
-                { label: 'จัดการสต๊อกสินค้า', icon: <Inventory />, path: '/stock_list' }
+                { label: 'จัดการสต๊อกสินค้า', icon: <Inventory />, path: '/stock_list' },
+                { label: 'เพิ่มหมวดหมู่สินค้า', icon: <Category />, path: '/craete_category'},
+                { label: 'เพิ่มสินค้า', icon: <Create />, path: '/create_item'},
+                { label: 'ดูคลังสินค้า', icon: <Visibility />, path: '/view_stock'}
+            ]
+        },
+        staffManagement: {
+            roles: ['Manager', 'operator', 'Developer'],
+            items: [
+                { label: 'จัดการข้อมลพนักงาน', icon: <ManageAccounts />, path: '/staff_list' },
+                { label: 'เพิ่มข้อมูลพนักงาน', icon: <PersonAdd />, path: '/create_staff'},
+                { label: 'จัดการวันลา', icon: <CalendarMonth />, path: '/view_staff'}
+            ]
+        },
+        taskManagement: {
+            roles: ['Manager', 'operator', 'Developer', 'Clerk', 'Engineer', 'Trainee', 'Intern'],
+            items: [
+                { label: 'จัดการข้อมูลงาน', icon: <Task />, path: '/task_list' },
+                { label: 'เพิ่มข้อมูลงาน', icon: <PostAdd />, path: '/craete_task' },
             ]
         },
         requests: {
-            roles: ['Manager', 'operator', 'Developer', 'Clerk'],
+            roles: ['Manager', 'operator', 'Developer', 'Clerk', 'Engineer', 'Trainee', 'Intern'],
             items: [
                 { label: 'ส่งคำร้องขอ ลากิจ/ลาอื่นๆ', icon: <RequestPage />, path: '/request_leave', disabled: !isLoggedIn }
             ]
         },
         account: {
-            roles: ['Manager', 'operator', 'Developer', 'Clerk'],
+            roles: ['Manager', 'operator', 'Developer', 'Clerk', 'Engineer', 'Trainee', 'Intern'],
             items: [
                 { label: 'แก้ไขข้อมูล/บัญชี', icon: <AccountCircle />, path: '/account' },
                 { label: 'ออกจากระบบ', icon: <ExitToApp />, onClick: handleLogout }
@@ -160,8 +202,12 @@ export default function CustomNavbar() {
     const renderDesktopMenu = (groupName, items, anchorEl, handleClose) => {
         const getIcon = () => {
             switch (groupName) {
-                case 'management':
-                    return <Dashboard />;
+                case 'stockManagement':
+                    return <Inventory />;
+                case 'staffManagement':
+                    return <Group/>
+                case 'taskManagement':
+                    return <Work/>
                 case 'requests':
                     return <Assignment />;
                 case 'account':
@@ -173,10 +219,14 @@ export default function CustomNavbar() {
     
         const getLabel = () => {
             switch (groupName) {
-                case 'management':
-                    return 'จัดการคลังสินค้า';
+                case 'stockManagement':
+                    return 'ระบบจัดการคลังสินค้า';
+                case 'staffManagement':
+                    return 'ระบบจัดการข้อมูลพนักงาน';
+                case 'taskManagement':
+                    return 'ระบบจัดการข้อมูลงาน';
                 case 'requests':
-                    return 'ยื่นคำร้อง';
+                    return 'ระบบยื่นคำร้อง';
                 case 'account':
                     return `จัดการบัญชี [${user.name}]`;
                 default:
@@ -208,26 +258,78 @@ export default function CustomNavbar() {
         );
     };
 
-    const renderMobileMenu = (items) => (
-        <List>
-            {items.map((item, index) => (
-                <ListItem 
-                    button 
-                    key={index} 
-                    onClick={() => { item.path ? navigate(item.path) : item.onClick(); setMobileOpen(false); }} 
-                    disabled={item.disabled}
-                >
-                    <ListItemIcon>{item.icon}</ListItemIcon>
-                    <ListItemText primary={item.label} />
-                </ListItem>
-            ))}
-        </List>
+    const renderMobileMenu = (groupName, items = []) => {
+        if (!Array.isArray(items)) return null; // Ensure items is an array
+    
+        return (
+            <>
+                {items.map((item, index) => (
+                    <ListItem 
+                        button 
+                        key={index} 
+                        onClick={() => { item.path ? navigate(item.path) : item.onClick(); setMobileOpen(false); }} 
+                        disabled={item.disabled}
+                    >
+                        <ListItemIcon>{item.icon}</ListItemIcon>
+                        <ListItemText primary={item.label} />
+                    </ListItem>
+                ))}
+                <Divider />
+            </>
+        );
+    };
+    
+    const groupNameMapping = {
+        stockManagement: 'ระบบจัดการคลังสินค้า',
+        staffManagement: 'ระบบจัดการข้อมูลพนักงาน',
+        taskManagement: 'ระบบจัดการข้อมูลงาน',
+        requests: 'ระบบยื่นคำร้อง',
+        account: 'จัดการบัญชี',
+        guest: 'เข้าสู่ระบบ',
+    };    
+
+    const renderMobileMenuWithGroups = () => (
+        <Box sx={{ width: 250 }}>
+            {Object.keys(navGroups).map((groupKey) => {
+                const items = getRoleBasedNavItems(groupKey);
+                const groupLabel = groupNameMapping[groupKey] || ''; // Corrected to use groupNameMapping
+                
+                if (items.length > 0) {
+                    return (
+                        <React.Fragment key={groupKey}>
+                            {groupLabel && <ListSubheader>{groupLabel}</ListSubheader>}
+                            {renderMobileMenu(groupKey, items)}
+                            <Divider />
+                        </React.Fragment>
+                    );
+                }
+                return null;
+            })}
+        </Box>
     );
+        
 
     return (
         <>
             <AppBar position="static">
                 <Toolbar>
+                    <Typography onClick={() => { navigate('/'); setMobileOpen(false); }} variant="h6" sx={{ flexGrow: 1 }}>
+                        <Dashboard/> Atlanta-OSS
+                    </Typography>
+                    {!isMobile && isLoggedIn && (
+                        <>
+                            {getRoleBasedNavItems('stockManagement').length > 0 && renderDesktopMenu('stockManagement', getRoleBasedNavItems('stockManagement'), stockManagementAnchorEl, handleMenuClose)}
+                            {getRoleBasedNavItems('staffManagement').length > 0 && renderDesktopMenu('staffManagement', getRoleBasedNavItems('staffManagement'), staffManagementAnchorEl, handleMenuClose)}
+                            {getRoleBasedNavItems('taskManagement').length > 0 && renderDesktopMenu('taskManagement', getRoleBasedNavItems('taskManagement'), taskManagementAnchorEl, handleMenuClose)}
+                            {getRoleBasedNavItems('requests').length > 0 && renderDesktopMenu('requests', getRoleBasedNavItems('requests'), requestsAnchorEl, handleMenuClose)}
+                            {getRoleBasedNavItems('account').length > 0 && renderDesktopMenu('account', getRoleBasedNavItems('account'), accountAnchorEl, handleMenuClose)}
+                        </>
+                    )}
+                    {!isMobile && !isLoggedIn && (
+                        <Button color="inherit" onClick={() => navigate('/login')}>
+                            เข้าสู่ระบบ
+                        </Button>
+                    )}
                     <IconButton
                         edge="start"
                         color="inherit"
@@ -237,21 +339,6 @@ export default function CustomNavbar() {
                     >
                         <MenuIcon />
                     </IconButton>
-                    <Typography onClick={() => { navigate('/'); setMobileOpen(false); }} variant="h6" sx={{ flexGrow: 1 }}>
-                        Atlanta-OSS
-                    </Typography>
-                    {!isMobile && isLoggedIn && (
-                        <>
-                            {getRoleBasedNavItems('management').length > 0 && renderDesktopMenu('management', getRoleBasedNavItems('management'), managementAnchorEl, handleMenuClose)}
-                            {getRoleBasedNavItems('requests').length > 0 && renderDesktopMenu('requests', getRoleBasedNavItems('requests'), requestsAnchorEl, handleMenuClose)}
-                            {getRoleBasedNavItems('account').length > 0 && renderDesktopMenu('account', getRoleBasedNavItems('account'), accountAnchorEl, handleMenuClose)}
-                        </>
-                    )}
-                    {!isMobile && !isLoggedIn && (
-                        <Button color="inherit" onClick={() => navigate('/login')}>
-                            Login
-                        </Button>
-                    )}
                 </Toolbar>
             </AppBar>
             <Drawer
@@ -263,13 +350,7 @@ export default function CustomNavbar() {
                     keepMounted: true,
                 }}
             >
-                <Box sx={{ width: 250 }}>
-                    {isLoggedIn && renderMobileMenu(getRoleBasedNavItems('management'))}
-                    {isLoggedIn && <Divider />}
-                    {isLoggedIn && renderMobileMenu(getRoleBasedNavItems('requests'))}
-                    {isLoggedIn && <Divider />}
-                    {isLoggedIn ? renderMobileMenu(getRoleBasedNavItems('account')) : renderMobileMenu(getRoleBasedNavItems('guest'))}
-                </Box>
+                {renderMobileMenuWithGroups()}
             </Drawer>
             <SuccessModal show={showSuccessModal} handleClose={handleCloseModal} message={message} />
         </>
