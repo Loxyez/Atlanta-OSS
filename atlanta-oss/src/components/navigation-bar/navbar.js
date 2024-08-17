@@ -163,7 +163,7 @@ export default function CustomNavbar() {
             items: [
                 { label: 'จัดการข้อมลพนักงาน', icon: <ManageAccounts />, path: '/staff_list' },
                 { label: 'เพิ่มข้อมูลพนักงาน', icon: <PersonAdd />, path: '/create_staff'},
-                { label: 'จัดการวันลา', icon: <CalendarMonth />, path: '/view_staff'}
+                { label: 'จัดการวันลา', icon: <CalendarMonth />, path: '/manage_leave'}
             ]
         },
         taskManagement: {

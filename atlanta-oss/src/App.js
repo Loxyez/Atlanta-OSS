@@ -20,6 +20,7 @@ import ForgotPassword from './components/login/forget_password';
 import LandingPage from './components/Landing/landing-page';
 import ProtectedRoute from './components/protectedRoute/protectedRoute';
 import LeaveRequest from './components/request-form/request-leave';
+import LeaveManagement from './components/staff-management/leave-management';
 import PublicRoute from './publicroute/PublicRoute';
 
 function SessionExpirationModal({show, handleExtendSession, handleClose }){
@@ -118,7 +119,12 @@ function App () {
             <CreateAccount/> 
           </ProtectedRoute>}
         />
-        <Route path='/request_leave' element={<LeaveRequest/>}/>
+        <Route path='/request_leave' element={
+          <ProtectedRoute allowedRoles={['Manager', 'Clerk', 'Engineer', 'Trainee', 'Developer', 'operator']}>
+            <LeaveRequest/>
+          </ProtectedRoute>
+        }/>
+        <Route path='/manage_leave' element={<LeaveManagement />}/>
 
         {/* Unauthentication */}
         <Route path="/unauthorized" element={<Unauthenticated />} />
