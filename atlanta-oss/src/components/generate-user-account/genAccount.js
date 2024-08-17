@@ -25,6 +25,7 @@ import {
     Card,
     CardContent,
     Divider,
+    InputLabel
 } from '@mui/material';
 import { jwtDecode } from 'jwt-decode';
 
@@ -70,69 +71,69 @@ export default function CreateAccount() {
             }
         }
 
-        const fetchDataRequest = async () => {
-            const token = localStorage.getItem('token');
-            try {
-                setLoadingOther(true);
-                const res = await axios.get(`${config.apiBaseUrl}/requests/open_tickets`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                if (Array.isArray(res.data)) {
-                    setRequests(res.data);
-                } else {
-                    setRequests([]);
-                }
-            } catch (error) {
-                console.error('Error fetching the request data', error);
-                setRequests([]);
-            } finally {
-                setLoadingOther(false);
-            }
-        };
-
-        const fetchDataRoles = async () => {
-            const token = localStorage.getItem('token');
-            try {
-                const res = await axios.get(`${config.apiBaseUrl}/users/user_roles`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                setUserRole(res.data);
-            } catch (error) {
-                console.error('Error fetching the user roles',  error);
-            }
-        };
-
-        const fetchDataAccount = async () => {
-            const token = localStorage.getItem('token');
-            try {
-                setLoadingAccount(true);
-                const res = await axios.get(`${config.apiBaseUrl}/users/user_accounts`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
-                if (Array.isArray(res.data)) {
-                    setRequestAccount(res.data);
-                } else {
-                    setRequestAccount([]);
-                }
-            } catch (error) {
-                console.error('Error fetching the request data', error);
-                setRequestAccount([]);
-            } finally {
-                setLoadingAccount(false);
-            }
-        }
-
         fetchDataRequest();
         fetchDataRoles();
         fetchDataAccount();
     }, []);
+
+    const fetchDataRequest = async () => {
+        const token = localStorage.getItem('token');
+        try {
+            setLoadingOther(true);
+            const res = await axios.get(`${config.apiBaseUrl}/requests/open_tickets`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            if (Array.isArray(res.data)) {
+                setRequests(res.data);
+            } else {
+                setRequests([]);
+            }
+        } catch (error) {
+            console.error('Error fetching the request data', error);
+            setRequests([]);
+        } finally {
+            setLoadingOther(false);
+        }
+    };
+
+    const fetchDataRoles = async () => {
+        const token = localStorage.getItem('token');
+        try {
+            const res = await axios.get(`${config.apiBaseUrl}/users/user_roles`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            setUserRole(res.data);
+        } catch (error) {
+            console.error('Error fetching the user roles',  error);
+        }
+    };
+
+    const fetchDataAccount = async () => {
+        const token = localStorage.getItem('token');
+        try {
+            setLoadingAccount(true);
+            const res = await axios.get(`${config.apiBaseUrl}/users/user_accounts`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (Array.isArray(res.data)) {
+                setRequestAccount(res.data);
+            } else {
+                setRequestAccount([]);
+            }
+        } catch (error) {
+            console.error('Error fetching the request data', error);
+            setRequestAccount([]);
+        } finally {
+            setLoadingAccount(false);
+        }
+    }
 
     const handleTicketChange = async (e) => {
         const selectedTicketID = e.target.value;
@@ -175,8 +176,16 @@ export default function CreateAccount() {
             });
 
             setTicketID('');
+            setUser({
+                user_name: '',
+                user_password: '',
+                user_role: '',
+                user_uid: '',
+            })
             setSelectedRequest(null);
             setShowSuccessModal(true);
+            fetchDataRequest();
+            fetchDataAccount();
         } catch (err) {
             setMessage('Error creating user');
             setShowErrorModal(true);
@@ -191,13 +200,13 @@ export default function CreateAccount() {
         const token = localStorage.getItem('token');
         try {
             await axios.put(
-            `${config.apiBaseUrl}/requests/${ticketID}/status`,
-            { status },
-            { headers: { Authorization: `Bearer ${token}` } }
+            `${config.apiBaseUrl}/requests/${ticketID}/status`,{ status },
+                { headers: { Authorization: `Bearer ${token}` } }
             );
             setMessage('Request status updated successfully');
             setShowSuccessModal(true);
             setSelectedRequest({ ...selectedRequest, status });
+            fetchDataRequest();
         } catch (err) {
             setMessage('Error updating request status.');
             setShowErrorModal(true);
@@ -209,10 +218,9 @@ export default function CreateAccount() {
     const sendEmail = async (email, user_name, user_password) => {
         try {
             const token = localStorage.getItem('token');
-            const res = await axios.post(
-            `${config.apiBaseUrl}/users/send_email`,
-            { email, user_name, user_password },
-            { headers: { Authorization: `Bearer ${token}` } }
+            const res = await axios.post(`${config.apiBaseUrl}/users/send_email`, { email, user_name, user_password }, { 
+                    headers: { Authorization: `Bearer ${token}` } 
+                }
             );
 
             if (res.data.success) {
@@ -300,6 +308,7 @@ export default function CreateAccount() {
                         </Table>
                     </TableContainer>
                     <TablePagination
+                        rowsPerPageOptions={[5, 10, 25]}
                         component="div"
                         count={request.length}
                         page={page}
@@ -319,6 +328,7 @@ export default function CreateAccount() {
                     <form>
                         <Grid container spacing={2}>
                             <Grid item xs={12} sm={6}>
+                                <InputLabel style={{ color: 'black' }}>Select Ticket ID</InputLabel>
                                 <Select
                                     fullWidth
                                     value={ticketID}
@@ -342,33 +352,33 @@ export default function CreateAccount() {
                             <Box mt={2}>
                                 <Grid container spacing={2}>
                                     <Grid item xs={12} sm={6}>
+                                        <InputLabel style={{ color: 'black' }}>Email</InputLabel>
                                         <TextField
                                             fullWidth
-                                            label="Email"
                                             value={selectedRequest.email}
                                             readOnly
                                         />
                                     </Grid>
                                     <Grid item xs={12} sm={6}>
+                                        <InputLabel style={{ color: 'black' }}>Telephone</InputLabel>
                                         <TextField
                                             fullWidth
-                                            label="Telephone"
                                             value={selectedRequest.tel}
                                             readOnly
                                         />
                                     </Grid>
                                     <Grid item xs={12} sm={6}>
+                                        <InputLabel style={{ color: 'black' }}>Role</InputLabel>
                                         <TextField
                                             fullWidth
-                                            label="Role"
                                             value={selectedRequest.role}
                                             readOnly
                                         />
                                     </Grid>
                                     <Grid item xs={12} sm={6}>
+                                        <InputLabel style={{ color: 'black' }}>Ticket Status</InputLabel>
                                         <Select
                                             fullWidth
-                                            label="Ticket Status"
                                             value={status}
                                             onChange={(e) => setStatus(e.target.value)}
                                             displayEmpty
@@ -380,13 +390,15 @@ export default function CreateAccount() {
                                     </Grid>
                                 </Grid>
                                 <Box mt={2}>
+                                    <InputLabel style={{ color: 'black' }}>Reason</InputLabel>
                                     <TextField
                                         fullWidth
-                                        label="Reason"
                                         multiline
                                         rows={4}
-                                        value={selectedRequest.reason}
-                                        readOnly
+                                        value={selectedRequest?.reason || ''}
+                                        InputProps={{
+                                            readOnly: true,
+                                        }}
                                     />
                                 </Box>
                                 <Box mt={2} textAlign="right">
@@ -415,9 +427,9 @@ export default function CreateAccount() {
                     <form onSubmit={handleSubmit}>
                         <Grid container spacing={2}>
                             <Grid item xs={12} sm={6}>
+                                <InputLabel style={{ color: 'black' }}>Username</InputLabel>
                                 <TextField
                                     fullWidth
-                                    label="Username"
                                     name="user_name"
                                     value={user.user_name}
                                     onChange={(e) => setUser({ ...user, user_name: e.target.value })}
@@ -425,9 +437,9 @@ export default function CreateAccount() {
                                 />
                             </Grid>
                             <Grid item xs={12} sm={6}>
+                                <InputLabel style={{ color: 'black' }}>Password</InputLabel>
                                 <TextField
                                     fullWidth
-                                    label="Password"
                                     name="user_password"
                                     type="password"
                                     value={user.user_password}
@@ -436,9 +448,9 @@ export default function CreateAccount() {
                                 />
                             </Grid>
                             <Grid item xs={12} sm={6}>
+                                <InputLabel style={{ color: 'black' }}>Role</InputLabel>
                                 <Select
                                     fullWidth
-                                    label="Role"
                                     value={user.user_role}
                                     onChange={(e) => setUser({ ...user, user_role: e.target.value })}
                                     displayEmpty
@@ -457,6 +469,7 @@ export default function CreateAccount() {
                                 </Select>
                             </Grid>
                             <Grid item xs={12} sm={6}>
+                                <InputLabel style={{ color: 'black' }}>USER UID</InputLabel>
                                 <TextField
                                     fullWidth
                                     label="User UID"
@@ -513,7 +526,7 @@ export default function CreateAccount() {
                                             <Button
                                             variant="contained"
                                             onClick={() =>
-                                                sendEmail(row.email, row.user_name, row.user_password)
+                                                sendEmail(row.user_name, row.user_name, row.n_user_password)
                                             }
                                             >
                                             Send Email
@@ -526,6 +539,7 @@ export default function CreateAccount() {
                         </Table>
                     </TableContainer>
                     <TablePagination
+                        rowsPerPageOptions={[5, 10, 25]}
                         component="div"
                         count={requestAccounts.length}
                         page={page}
