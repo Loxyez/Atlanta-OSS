@@ -34,7 +34,8 @@ export default function LeaveRequest() {
                 setUser({
                     name: decodedToken.user_name,
                     role: decodedToken.user_role,
-                    user_id: decodedToken.user_id
+                    user_id: decodedToken.user_id,
+                    staff_cardid: decodedToken.staff_cardid
                 });
             } catch (err) {
                 console.error('Failed to decode token', err);
@@ -52,7 +53,7 @@ export default function LeaveRequest() {
 
         const fetchUserLeaveBalance = async () => {
             try {
-                const res = await axios.get(`${config.apiBaseUrl}/leave_requests/leave_balance/${jwtDecode(token).user_id}`)
+                const res = await axios.get(`${config.apiBaseUrl}/leave_requests/leave_balance/${jwtDecode(token).staff_cardid}`)
                 setLeaveBalance(res.data)
             } catch (error) {
                 console.error('Error fetching the leave balances', error);
@@ -69,7 +70,7 @@ export default function LeaveRequest() {
         e.preventDefault();
         const token = localStorage.getItem('token') || sessionStorage.getItem('token');
         const leaveRequest = {
-            user_id: user.user_id,
+            staff_cardid: user.staff_cardid,
             leave_type_id: selectedLeave,
             leave_period: leavePeriod,
             start_date: startDate,
