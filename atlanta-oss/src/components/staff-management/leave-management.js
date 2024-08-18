@@ -123,6 +123,7 @@ export default function LeaveManagement() {
                         <Table>
                             <TableHead>
                                 <TableRow>
+                                    <TableCell>รหัสพนักงาน</TableCell>
                                     <TableCell>ชื่อพนักงาน</TableCell>
                                     <TableCell>ประเภทการลา</TableCell>
                                     <TableCell>ช่วงเวลา</TableCell>
@@ -135,6 +136,7 @@ export default function LeaveManagement() {
                             <TableBody>
                                 {paginatedRequests.map((request) => (
                                     <TableRow key={request.request_id}>
+                                        <TableCell>{request.staff_cardid}</TableCell>
                                         <TableCell>{request.staff_details.staff_name}</TableCell>
                                         <TableCell>{request.leave_types.leave_name}</TableCell>
                                         <TableCell>{leavePeriodMapping[request.leave_period] || request.leave_period}</TableCell>

@@ -33,11 +33,13 @@ import axios from 'axios';
 import config from '../../utils/config';
 import CustomNavbar from '../navigation-bar/navbar';
 import { Container } from 'react-bootstrap';
+import LeaveHistoryDialog from '../dialog/LeaveHistoryDialog';
 
 export default function StaffManagementDetail () {
     const [leaveTypes, setLeaveTypes] = useState([]);
     const [staffDetails, setStaffDetails] = useState([]);
     const [selectedStaff, setSelectedStaff] = useState(null);
+    const [selectedLeaveType, setSelectedLeaveType] = useState(null);
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     const [openEditDialog, setOpenEditDialog] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -46,6 +48,8 @@ export default function StaffManagementDetail () {
     const [openErrorDialog, setOpenErrorDialog] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
     const [openSuccessDialog, setOpenSuccessDialog] = useState(false);
+    const [openLeaveDetailDialog, setOpenLeaveDetailDialog] = useState(false);
+    const [openTaskDetailDialog, setOpenTaskDetailDialog] = useState(false);
 
     useEffect(() => {
         fetchStaffDetails();
@@ -167,6 +171,12 @@ export default function StaffManagementDetail () {
         setOpenSuccessDialog(false);
     };
 
+    const handleLeaveDetailClick = (staff, leaveType) => {
+        setSelectedStaff(staff);
+        setSelectedLeaveType(leaveType);
+        setOpenLeaveDetailDialog(true);
+    };
+
     const roleMapping = {
         "Manager": "ผู้จัดการ",
         "Clerk": "เสมียน",
@@ -213,6 +223,7 @@ export default function StaffManagementDetail () {
                                                     key={balance.balance_id}
                                                     label={`${getLeaveTypeName(balance.leave_type_id)}: ${balance.leave_days_left} วัน`}
                                                     sx={{ m: 0.5 }}
+                                                    onClick={() => handleLeaveDetailClick(staff, balance)}
                                                 />
                                             ))}
                                         </TableCell>
@@ -271,6 +282,13 @@ export default function StaffManagementDetail () {
                         </Button>
                     </DialogActions>
                 </Dialog>
+
+                <LeaveHistoryDialog 
+                    open={openLeaveDetailDialog} 
+                    staff_CARDID={selectedStaff?.staff_cardid} 
+                    leaveTypeId={selectedLeaveType?.leave_type_id} 
+                    onClose={() => setOpenLeaveDetailDialog(false)} 
+                />
 
                 {/* Edit Staff Dialog */}
                 <Dialog
