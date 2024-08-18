@@ -50,7 +50,7 @@ export default function CraeteStaff() {
     }, []);
 
     const fetchDataRoles = async () => {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
         try {
             const res = await axios.get(`${config.apiBaseUrl}/users/user_roles`, {
                 headers: {
@@ -97,7 +97,7 @@ export default function CraeteStaff() {
     const roleMapping = {
         "Manager": "ผู้จัดการ",
         "Clerk": "เสมียน",
-        "Engineer": "วิศวกร",
+        "Engineer": "ช่าง",
         "Trainee": "นักศึกษาฝึกงาน",
         "Developer": "Developer FE/BE"
     };
