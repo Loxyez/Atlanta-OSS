@@ -22,6 +22,7 @@ import ProtectedRoute from './components/protectedRoute/protectedRoute';
 import LeaveRequest from './components/request-form/request-leave';
 import LeaveManagement from './components/staff-management/leave-management';
 import CraeteStaff from './components/staff-management/create-staff-detail';
+import StaffManagementDetail from './components/staff-management/staff-management';
 import PublicRoute from './publicroute/PublicRoute';
 
 function SessionExpirationModal({show, handleExtendSession, handleClose }){
@@ -139,6 +140,11 @@ function App () {
         <Route path='/create_staff' element={
           <ProtectedRoute allowedRoles={['Manager', 'operator', 'Developer']}>
             <CraeteStaff />
+          </ProtectedRoute>
+        }/>
+        <Route path='/staff_list' element={
+          <ProtectedRoute allowedRoles={['Manager', 'operator', 'Developer']}>
+            <StaffManagementDetail />
           </ProtectedRoute>
         }/>
 
