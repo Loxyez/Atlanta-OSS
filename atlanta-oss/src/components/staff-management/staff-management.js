@@ -27,13 +27,15 @@ import {
     Edit,
     Delete,
     AddCircleOutline,
-    RemoveCircleOutline
+    RemoveCircleOutline,
+    Visibility
 } from '@mui/icons-material';
 import axios from 'axios';
 import config from '../../utils/config';
 import CustomNavbar from '../navigation-bar/navbar';
 import { Container } from 'react-bootstrap';
 import LeaveHistoryDialog from '../dialog/LeaveHistoryDialog';
+import TaskDetailsDialog from '../dialog/TaskDetailsDialog';
 
 export default function StaffManagementDetail () {
     const [leaveTypes, setLeaveTypes] = useState([]);
@@ -177,6 +179,15 @@ export default function StaffManagementDetail () {
         setOpenLeaveDetailDialog(true);
     };
 
+    const handleTaskDetailClick = (staff) => {
+        setSelectedStaff(staff);
+        setOpenTaskDetailDialog(true);
+    };
+
+    const handleCloseTaskDetailDialog = () => {
+        setOpenTaskDetailDialog(false);
+    };
+
     const roleMapping = {
         "Manager": "ผู้จัดการ",
         "Clerk": "เสมียน",
@@ -207,6 +218,7 @@ export default function StaffManagementDetail () {
                                     <TableCell>ตำแหน่ง</TableCell>
                                     <TableCell>เบอร์โทรศัพท์</TableCell>
                                     <TableCell>จำนวนวันลาที่เหลือ</TableCell>
+                                    <TableCell>รายงาน</TableCell>
                                     <TableCell>จัดการข้อมูล</TableCell>
                                 </TableRow>
                             </TableHead>
@@ -227,24 +239,42 @@ export default function StaffManagementDetail () {
                                                 />
                                             ))}
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell align="center">
                                             <Button 
-                                                startIcon={<Edit />} 
                                                 variant="contained" 
                                                 color="primary" 
-                                                onClick={() => handleEdit(staff)}
-                                                sx={{ mr: 1 }}
+                                                size="small"
+                                                startIcon={<Visibility />}
+                                                onClick={() => handleTaskDetailClick(staff)}
                                             >
-                                                แก้ไข
+                                                ดูรายงาน
                                             </Button>
-                                            <Button 
-                                                startIcon={<Delete />} 
-                                                variant="contained" 
-                                                color="error" 
-                                                onClick={() => handleDelete(staff)}
-                                            >
-                                                ลบข้อมูล
-                                            </Button>
+                                        </TableCell>
+                                        <TableCell align="center">
+                                            <Grid container justifyContent="center" spacing={1}>
+                                                <Grid item>
+                                                    <Button 
+                                                        variant="contained" 
+                                                        color="primary" 
+                                                        size="small"
+                                                        onClick={() => handleEdit(staff)}
+                                                        startIcon={<Edit />}
+                                                    >
+                                                        แก้ไข
+                                                    </Button>
+                                                </Grid>
+                                                <Grid item>
+                                                    <Button 
+                                                        variant="contained" 
+                                                        color="error" 
+                                                        size="small"
+                                                        onClick={() => handleDelete(staff)}
+                                                        startIcon={<Delete />}
+                                                    >
+                                                        ลบข้อมูล
+                                                    </Button>
+                                                </Grid>
+                                            </Grid>
                                         </TableCell>
                                     </TableRow>
                                 ))}
@@ -283,6 +313,7 @@ export default function StaffManagementDetail () {
                     </DialogActions>
                 </Dialog>
 
+                {/* Leave Detail Dialog */}
                 <LeaveHistoryDialog 
                     open={openLeaveDetailDialog} 
                     staff_CARDID={selectedStaff?.staff_cardid} 
@@ -290,27 +321,12 @@ export default function StaffManagementDetail () {
                     onClose={() => setOpenLeaveDetailDialog(false)} 
                 />
 
-                {/* Edit Staff Dialog */}
-                <Dialog
-                    open={openEditDialog}
-                    onClose={handleCloseEditDialog}
-                >
-                    <DialogTitle>Edit Staff Details</DialogTitle>
-                    <DialogContent>
-                        <DialogContentText>
-                            Edit the details of the staff member.
-                        </DialogContentText>
-                        {/* Add form fields to edit the staff details */}
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={handleCloseEditDialog} color="primary">
-                            Cancel
-                        </Button>
-                        <Button color="primary">
-                            Save
-                        </Button>
-                    </DialogActions>
-                </Dialog>
+                {/* Task Details Dialog */}
+                <TaskDetailsDialog
+                    open={openTaskDetailDialog}
+                    tasks={selectedStaff?.task_list || []}
+                    onClose={handleCloseTaskDetailDialog}
+                />
 
                 {/* Error Dialog */}
                 <Dialog
