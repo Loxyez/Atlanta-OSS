@@ -201,7 +201,7 @@ export default function StaffManagementDetail () {
             <CustomNavbar/>
             <Container>
                 <Typography variant="h4" sx={{ mt: 4, mb: 4 }} gutterBottom>
-                    ระบบจัดการข้อมูลงาน
+                    ระบบจัดการข้อมูลพนักงาน
                 </Typography>
                 <Divider/>
                 {loading ? (
