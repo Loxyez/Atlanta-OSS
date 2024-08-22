@@ -25,6 +25,7 @@ import axios from 'axios';
 import config from '../utils/config';
 import CustomNavbar from '../components/navigation-bar/navbar';
 import { Search, Edit, Delete } from '@mui/icons-material';
+
 export default function CreateCategory() {
     const [categoryName, setCategoryName] = useState('');
     const [loading, setLoading] = useState(false);
@@ -57,7 +58,7 @@ export default function CreateCategory() {
 
     const handleAddCategory = async () => {
         setLoading(true);
-    
+
         // Validate the input: only English letters allowed
         const englishRegex = /^[A-Za-z\s]+$/;
         if (!englishRegex.test(categoryName)) {
@@ -65,21 +66,21 @@ export default function CreateCategory() {
             setLoading(false);
             return;
         }
-    
+
         // Convert category name to uppercase
         const uppercaseCategoryName = categoryName.toUpperCase();
-    
+
         // Check if the category name already exists in the database
         const isDuplicate = categories.some(
             (category) => category.categoryname.toUpperCase() === uppercaseCategoryName
         );
-    
+
         if (isDuplicate) {
             setErrorMessage('ชื่อหมวดหมู่นี้มีอยู่แล้วในระบบ');
             setLoading(false);
             return;
         }
-    
+
         const newCategory = { categoryname: uppercaseCategoryName };
         try {
             const token = localStorage.getItem('token') || sessionStorage.getItem('token');
@@ -103,11 +104,11 @@ export default function CreateCategory() {
             await axios.delete(`${config.apiBaseUrl}/categories/delete_category/${categoryToDelete}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            setSuccessMessage('Category deleted successfully!');
+            setSuccessMessage('ลบหมวดหมู่สำเร็จแล้ว!');
             fetchCategories();
         } catch (error) {
-            console.error('Failed to delete category', error);
-            setErrorMessage('Failed to delete category');
+            console.error('ไม่สามารถลบหมวดหมู่ได้', error);
+            setErrorMessage('ไม่สามารถลบหมวดหมู่ได้');
         } finally {
             setConfirmDelete(false);
             setCategoryToDelete(null);
@@ -121,6 +122,13 @@ export default function CreateCategory() {
     };
 
     const handleSaveEdit = async (categoryid) => {
+        // Validate that the new category name only contains Eng characters
+        const englishRegex = /^[A-Za-z\s]+$/;
+        if (!englishRegex.test(newCategoryName)) {
+            setErrorMessage('กรุณากรอกชื่อหมวดหมู่เป็นภาษาอังกฤษเท่านั้น');
+            return;
+        }
+
         const token = localStorage.getItem('token') || sessionStorage.getItem('token');
         try {
             await axios.put(`${config.apiBaseUrl}/categories/update_category/${categoryid}`, {
@@ -130,10 +138,10 @@ export default function CreateCategory() {
             });
             setEditMode(null);
             fetchCategories();
-            setSuccessMessage('Category updated successfully!');
+            setSuccessMessage('ลบหมวดหมู่สำเร็จแล้ว!');
         } catch (error) {
-            console.error('Failed to update category', error);
-            setErrorMessage('Failed to update category');
+            console.error('ไม่สามารถอัพเดตหมวดหมู่ได้', error);
+            setErrorMessage('ไม่สามารถอัพเดตหมวดหมู่ได้');
         }
     };
 
@@ -198,117 +206,115 @@ export default function CreateCategory() {
                     </Button>
                 </Box>
 
-                <TextField
-                    label="ค้นหา"
-                    fullWidth
-                    sx={{ mb: 2, maxWidth: '400px' }}
-                    InputProps={{
-                        startAdornment: <Search sx={{ mr: 1 }} />,
-                    }}
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                <TableContainer component={Paper} sx={{ mt: 4, mx: 'auto', maxWidth: '600px' }}>
+                    <Table>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>ชื่อหมวดหมู่</TableCell>
+                                <TableCell sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                    จัดการข้อมูล
+                                    <TextField
+                                        label="ค้นหา"
+                                        sx={{ ml: 2, width: '200px' }}
+                                        InputProps={{
+                                            startAdornment: <Search sx={{ mr: 1 }} />,
+                                        }}
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                    />
+                                </TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {filteredCategories.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((category) => (
+                                <TableRow key={category.categoryid}>
+                                    <TableCell>
+                                        {editMode === category.categoryid ? (
+                                            <TextField
+                                                value={newCategoryName}
+                                                onChange={(e) => setNewCategoryName(e.target.value)}
+                                            />
+                                        ) : (
+                                            category.categoryname
+                                        )}
+                                    </TableCell>
+                                    <TableCell>
+                                        {editMode === category.categoryid ? (
+                                            <>
+                                                <Button onClick={() => handleSaveEdit(category.categoryid)}>บันทึก</Button>
+                                                <Button onClick={handleCancelEdit}>ยกเลิก</Button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Button
+                                                    variant="contained"
+                                                    color="primary"
+                                                    startIcon={<Edit />}
+                                                    onClick={() => handleEdit(category.categoryid)}
+                                                    sx={{ mr: 1 }}
+                                                >
+                                                    แก้ไข
+                                                </Button>
+                                                <Button
+                                                    variant="contained"
+                                                    color="error"
+                                                    startIcon={<Delete />}
+                                                    onClick={() => handleConfirmDelete(category.categoryid)}
+                                                >
+                                                    ลบข้อมูล
+                                                </Button>
+                                            </>
+                                        )}
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                    <TablePagination
+                        rowsPerPageOptions={[5, 10, 25]}
+                        component="div"
+                        count={filteredCategories.length}
+                        rowsPerPage={rowsPerPage}
+                        page={page}
+                        onPageChange={handleChangePage}
+                        onRowsPerPageChange={handleChangeRowsPerPage}
+                    />
+                </TableContainer>
+
+                <Snackbar
+                    open={Boolean(successMessage)}
+                    autoHideDuration={6000}
+                    onClose={() => setSuccessMessage('')}
+                    message={successMessage}
                 />
 
-                {loading ? (
-                    <CircularProgress />
-                ) : (
-                    <TableContainer component={Paper} sx={{ mt: 4, mx: 'auto', maxWidth: '600px' }}>
-                        <Table>
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell>ชื่อหมวดหมู่</TableCell>
-                                    <TableCell>จัดการข้อมูล</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {filteredCategories.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((category) => (
-                                    <TableRow key={category.categoryid}>
-                                        <TableCell>
-                                            {editMode === category.categoryid ? (
-                                                <TextField
-                                                    value={newCategoryName}
-                                                    onChange={(e) => setNewCategoryName(e.target.value)}
-                                                />
-                                            ) : (
-                                                category.categoryname
-                                            )}
-                                        </TableCell>
-                                        <TableCell>
-                                            {editMode === category.categoryid ? (
-                                                <>
-                                                    <Button onClick={() => handleSaveEdit(category.categoryid)}>บันทึก</Button>
-                                                    <Button onClick={handleCancelEdit}>ยกเลิก</Button>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <Button
-                                                        variant="contained"
-                                                        color="primary"
-                                                        startIcon={<Edit />}
-                                                        onClick={() => handleEdit(category.categoryid)}
-                                                        sx={{ mr: 1 }}
-                                                    >
-                                                        แก้ไข
-                                                    </Button>
-                                                    <Button
-                                                        variant="contained"
-                                                        color="error"
-                                                        startIcon={<Delete />}
-                                                        onClick={() => handleConfirmDelete(category.categoryid)}
-                                                    >
-                                                        ลบข้อมูล
-                                                    </Button>
-                                                </>
-                                            )}
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                        <TablePagination
-                            rowsPerPageOptions={[5, 10, 25]}
-                            component="div"
-                            count={filteredCategories.length}
-                            rowsPerPage={rowsPerPage}
-                            page={page}
-                            onPageChange={handleChangePage}
-                            onRowsPerPageChange={handleChangeRowsPerPage}
-                        />
-                    </TableContainer>
+                <Snackbar
+                    open={Boolean(errorMessage)}
+                    autoHideDuration={6000}
+                    onClose={() => setErrorMessage('')}
+                    message={errorMessage}
+                />
 
-                )}
+                <Dialog
+                    open={confirmDelete}
+                    onClose={() => setConfirmDelete(false)}
+                >
+                    <DialogTitle>ยืนยันการลบ</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>
+                            คุณแน่ใจหรือไม่ว่าต้องการลบหมวดหมู่นี้?
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setConfirmDelete(false)} color="primary">
+                            ยกเลิก
+                        </Button>
+                        <Button onClick={handleDelete} color="error" autoFocus>
+                            ลบ
+                        </Button>
+                    </DialogActions>
+                </Dialog>
             </Box>
-
-            {/* Confirm Delete Dialog */}
-            <Dialog
-                open={confirmDelete}
-                onClose={() => setConfirmDelete(false)}
-            >
-                <DialogTitle>ยืนยันการลบหมวดหมู่</DialogTitle>
-                <DialogContent>
-                    <DialogContentText>
-                        คุณต้องการลบหมวดหมู่นี้จริงหรือไม่?
-                    </DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setConfirmDelete(false)}>ยกเลิก</Button>
-                    <Button onClick={handleDelete} color="error">ลบ</Button>
-                </DialogActions>
-            </Dialog>
-
-            {/* Success and Error Snackbar */}
-            <Snackbar
-                open={Boolean(successMessage)}
-                autoHideDuration={3000}
-                onClose={() => setSuccessMessage('')}
-                message={successMessage}
-            />
-            <Snackbar
-                open={Boolean(errorMessage)}
-                autoHideDuration={3000}
-                onClose={() => setErrorMessage('')}
-                message={errorMessage}
-            />
         </div>
     );
 }
