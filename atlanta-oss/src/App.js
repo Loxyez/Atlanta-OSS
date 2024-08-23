@@ -24,6 +24,8 @@ import LeaveManagement from './components/staff-management/leave-management';
 import CraeteStaff from './components/staff-management/create-staff-detail';
 import StaffManagementDetail from './components/staff-management/staff-management';
 import PublicRoute from './publicroute/PublicRoute';
+import CreateItem from './item-management/create_item';
+import CreateCategory from './item-management/create_category';
 
 function SessionExpirationModal({show, handleExtendSession, handleClose }){
   return (
@@ -145,6 +147,16 @@ function App () {
         <Route path='/staff_list' element={
           <ProtectedRoute allowedRoles={['Manager', 'operator', 'Developer']}>
             <StaffManagementDetail />
+          </ProtectedRoute>
+        }/>
+        <Route path='/create_item' element={
+          <ProtectedRoute allowedRoles={['Manager', 'operator', 'Developer']}>
+            <CreateItem />
+          </ProtectedRoute>
+        }/>
+        <Route path='/create_category' element={
+          <ProtectedRoute allowedRoles={['Manager', 'operator', 'Developer']}>
+            <CreateCategory />
           </ProtectedRoute>
         }/>
 
