@@ -26,6 +26,7 @@ import StaffManagementDetail from './components/staff-management/staff-managemen
 import PublicRoute from './publicroute/PublicRoute';
 import CreateItem from './item-management/create_item';
 import CreateCategory from './item-management/create_category';
+import ManageStock from './item-management/manage_stock';
 
 function SessionExpirationModal({show, handleExtendSession, handleClose }){
   return (
@@ -151,6 +152,11 @@ function App () {
         <Route path='/create_category' element={
           <ProtectedRoute allowedRoles={['Manager', 'operator', 'Developer']}>
             <CreateCategory />
+          </ProtectedRoute>
+        }/>
+        <Route path='/stock_list' element={
+          <ProtectedRoute allowedRoles={['Manager', 'operator', 'Developer']}>
+            <ManageStock />
           </ProtectedRoute>
         }/>
 
