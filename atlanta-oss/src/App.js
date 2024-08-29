@@ -27,6 +27,7 @@ import PublicRoute from './publicroute/PublicRoute';
 import CreateItem from './item-management/create_item';
 import CreateCategory from './item-management/create_category';
 import ManageStock from './item-management/manage_stock';
+import ViewStock from './item-management/view_stock';
 
 function SessionExpirationModal({show, handleExtendSession, handleClose }){
   return (
@@ -154,9 +155,14 @@ function App () {
             <CreateCategory />
           </ProtectedRoute>
         }/>
-        <Route path='/stock_list' element={
+        <Route path='/stock_management' element={
           <ProtectedRoute allowedRoles={['Manager', 'operator', 'Developer']}>
             <ManageStock />
+          </ProtectedRoute>
+        }/>
+        <Route path='/view_stock' element={
+          <ProtectedRoute allowedRoles={['Manager', 'Clerk', 'Engineer', 'Trainee', 'Developer', 'operator']}>
+            <ViewStock/>
           </ProtectedRoute>
         }/>
 

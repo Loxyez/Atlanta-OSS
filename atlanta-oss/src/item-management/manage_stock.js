@@ -16,7 +16,8 @@ import {
     DialogContent,
     DialogContentText,
     DialogTitle,
-    TablePagination
+    TablePagination,
+    Typography
 } from '@mui/material';
 
 import axios from 'axios';
@@ -144,7 +145,8 @@ export default function ManageStock() {
         <div>
             <CustomNavbar />
             <Box sx={{ p: 3 }}>
-                <TableContainer component={Paper} sx={{ mt: 4, mx: 'auto', maxWidth: '1000px' }}>
+                <Typography variant="h4" sx={{ ml: 9 }}>Stock Management</Typography> 
+                <TableContainer component={Paper} sx={{ mt: 4, mx: 'auto', maxWidth: '90%' }}>
                     <Table>
                         <TableHead>
                             <TableRow>
