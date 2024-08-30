@@ -9,7 +9,6 @@ import {
     Button, 
     Box, 
     Drawer, 
-    List, 
     ListItem,
     ListItemIcon, 
     ListItemText,
@@ -152,9 +151,9 @@ export default function CustomNavbar() {
         stockManagement: {
             roles: ['Manager', 'operator', 'Developer', 'Clerk'],
             items: [
-                { label: 'จัดการสต๊อกสินค้า', icon: <Inventory />, path: '/stock_list' },
                 { label: 'เพิ่มหมวดหมู่สินค้า', icon: <Category />, path: '/create_category'},
                 { label: 'เพิ่มสินค้า', icon: <Create />, path: '/create_item'},
+                { label: 'จัดการสต๊อกสินค้า', icon: <Inventory />, path: '/stock_management' },
                 { label: 'ดูคลังสินค้า', icon: <Visibility />, path: '/view_stock'}
             ]
         },
