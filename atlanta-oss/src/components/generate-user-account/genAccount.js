@@ -1,12 +1,33 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
 import config from '../../utils/config';
-import { Spinner } from 'react-bootstrap';
+import { Spinner, Tab } from 'react-bootstrap';
 import CustomNavbar from '../navigation-bar/navbar';
 import SuccessModal from '../Modal/SuccessModal';
 import ErrorModal from '../Modal/ErrorModel';
-import { useTable, usePagination, useSortBy } from 'react-table';
-import { Table, Button, Pagination} from 'react-bootstrap';
+import {
+    Box,
+    Button,
+    Container,
+    CircularProgress,
+    Grid,
+    MenuItem,
+    Select,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    TablePagination,
+    TextField,
+    Typography,
+    Card,
+    CardContent,
+    Divider,
+    InputLabel
+} from '@mui/material';
+import { jwtDecode } from 'jwt-decode';
 
 export default function CreateAccount() {
     const [request, setRequests] = useState([]);
@@ -16,8 +37,9 @@ export default function CreateAccount() {
         user_name: '',
         user_password: '',
         user_role: '',
-        user_uid: '',
+        staff_cardid: '',
     });
+    const [userDetail, setUserDetail] = useState(null);
     const [userRole, setUserRole] = useState([]);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [showErrorModal, setShowErrorModal] = useState(false);
@@ -29,63 +51,23 @@ export default function CreateAccount() {
     const [loadingAccount, setLoadingAccount] = useState(false);
     const [loadingOther, setLoadingOther] = useState(false);
 
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(5);
+
     useEffect(() => {
-        const fetchDataRequest = async () => {
-            const token = localStorage.getItem('token');
-            try {
-                setLoadingOther(true);
-                const res = await axios.get(`${config.apiBaseUrl}/requests/open_tickets`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                if (Array.isArray(res.data)) {
-                    setRequests(res.data);
-                } else {
-                    setRequests([]);
-                }
-            } catch (error) {
-                console.error('Error fetching the request data', error);
-                setRequests([]);
-            } finally {
-                setLoadingOther(false);
-            }
-        };
 
-        const fetchDataRoles = async () => {
-            const token = localStorage.getItem('token');
-            try {
-                const res = await axios.get(`${config.apiBaseUrl}/users/user_roles`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                setUserRole(res.data);
-            } catch (error) {
-                console.error('Error fetching the user roles',  error);
-            }
-        };
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 
-        const fetchDataAccount = async () => {
-            const token = localStorage.getItem('token');
+        if (token) {
             try {
-                setLoadingAccount(true);
-                const res = await axios.get(`${config.apiBaseUrl}/users/user_accounts`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
-                if (Array.isArray(res.data)) {
-                    setRequestAccount(res.data);
-                } else {
-                    setRequestAccount([]);
-                }
-            } catch (error) {
-                console.error('Error fetching the request data', error);
-                setRequestAccount([]);
-            } finally {
-                setLoadingAccount(false);
+                const decodedToken = jwtDecode(token);
+                const userData = {
+                    name: decodedToken.user_name,
+                    role: decodedToken.user_role
+                };
+                setUserDetail(userData);
+            } catch (err) {
+                console.error('Failed to decode token', err);
             }
         }
 
@@ -94,85 +76,137 @@ export default function CreateAccount() {
         fetchDataAccount();
     }, []);
 
-    const handleChange = (e) => {
-        setUser({...user, [e.target.name]: e.target.value });
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setLoading(false);
+    const fetchDataRequest = async () => {
         const token = localStorage.getItem('token');
-        if (!token) {
-            setMessage('User is not authenticated');
-            showErrorModal(true);
-            return;
-        }
         try {
-            const res = await axios.post(`${config.apiBaseUrl}/users/create_user`, user, {
+            setLoadingOther(true);
+            const res = await axios.get(`${config.apiBaseUrl}/requests/open_tickets`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
+            });
+            if (Array.isArray(res.data)) {
+                setRequests(res.data);
+            } else {
+                setRequests([]);
+            }
+        } catch (error) {
+            console.error('Error fetching the request data', error);
+            setRequests([]);
+        } finally {
+            setLoadingOther(false);
+        }
+    };
+
+    const fetchDataRoles = async () => {
+        const token = localStorage.getItem('token');
+        try {
+            const res = await axios.get(`${config.apiBaseUrl}/users/user_roles`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            setUserRole(res.data);
+        } catch (error) {
+            console.error('Error fetching the user roles',  error);
+        }
+    };
+
+    const fetchDataAccount = async () => {
+        const token = localStorage.getItem('token');
+        try {
+            setLoadingAccount(true);
+            const res = await axios.get(`${config.apiBaseUrl}/users/user_accounts`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (Array.isArray(res.data)) {
+                setRequestAccount(res.data);
+            } else {
+                setRequestAccount([]);
+            }
+        } catch (error) {
+            console.error('Error fetching the request data', error);
+            setRequestAccount([]);
+        } finally {
+            setLoadingAccount(false);
+        }
+    }
+
+    const handleTicketChange = async (e) => {
+        const selectedTicketID = e.target.value;
+        setTicketID(selectedTicketID);
+        const token = localStorage.getItem('token');
+    
+        if (selectedTicketID !== '-' && selectedTicketID !== 'N/A') {
+          try {
+            const res = await axios.get(`${config.apiBaseUrl}/requests/${selectedTicketID}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            setSelectedRequest(res.data);
+          } catch (error) {
+            console.error('Error fetching the selected request details', error);
+          }
+        } else {
+          setSelectedRequest(null);
+        }
+    };
+    
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        const token = localStorage.getItem('token');
+        try {
+            const res = await axios.post(`${config.apiBaseUrl}/users/create_user`, user, {
+                headers: { Authorization: `Bearer ${token}` },
             });
 
             if (res.data && res.data.ticketid && res.data.mid) {
                 setRequests([...request, res.data]);
             }
 
-            setMessage('User created successfully');
+                setMessage('User created successfully');
+                setUser({
+                user_name: '',
+                user_password: '',
+                user_role: '',
+                staff_cardid: '',
+            });
+
+            setTicketID('');
             setUser({
                 user_name: '',
                 user_password: '',
                 user_role: '',
-                user_uid: '',
-            });
-            setTicketID('');
+                staff_cardid: '',
+            })
             setSelectedRequest(null);
             setShowSuccessModal(true);
+            fetchDataRequest();
+            fetchDataAccount();
         } catch (err) {
-            setMessage('Error creating user', err);
+            setMessage('Error creating user');
             setShowErrorModal(true);
         } finally {
             setLoading(false);
         }
     };
-
-    const handleTicketChange = async (e) => {
-        const ticketID = e.target.value;
-        setTicketID(ticketID);
-        const token = localStorage.getItem('token');
-        if (ticketID !== '-' && ticketID !== 'N/A') {
-            try {
-                const res = await axios.get(`${config.apiBaseUrl}/requests/${ticketID}`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                setSelectedRequest(res.data);
-            } catch (error) {
-                console.error('Error fetching the selected request details', error);
-            }
-        } else {
-            setSelectedRequest(null);
-        }
-    };
-
+    
     const handleStatusChange = async (e) => {
         e.preventDefault();
         setLoading(true);
         const token = localStorage.getItem('token');
-        if (!token) {
-            setMessage('User is not authenticated');
-            return;
-        }
         try {
-            const res = await axios.put(`${config.apiBaseUrl}/requests/${ticketID}/status`, {status}, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
+            await axios.put(
+            `${config.apiBaseUrl}/requests/${ticketID}/status`,{ status },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
             setMessage('Request status updated successfully');
             setShowSuccessModal(true);
             setSelectedRequest({ ...selectedRequest, status });
+            fetchDataRequest();
         } catch (err) {
             setMessage('Error updating request status.');
             setShowErrorModal(true);
@@ -180,7 +214,37 @@ export default function CreateAccount() {
             setLoading(false);
         }
     };
+    
+    const sendEmail = async (email, user_name, user_password) => {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.post(`${config.apiBaseUrl}/users/send_email`, { email, user_name, user_password }, { 
+                    headers: { Authorization: `Bearer ${token}` } 
+                }
+            );
 
+            if (res.data.success) {
+            setMessage('Email sent successfully');
+            setShowSuccessModal(true);
+            } else {
+            setMessage('Failed to send email');
+            setShowErrorModal(true);
+            }
+        } catch (error) {
+            setMessage('Failed to send email');
+            setShowErrorModal(true);
+        }
+    };
+
+    const handleChangePage = (event, newPage) => {
+        setPage(newPage);
+    };
+
+    const handleChangeRowsPerPage = (event) => {
+        setRowsPerPage(parseInt(event.target.value, 10));
+        setPage(0);
+    };
+    
     const handleCloseSuccessModal = () => {
         setShowSuccessModal(false);
     };
@@ -189,325 +253,306 @@ export default function CreateAccount() {
         setShowErrorModal(false);
     };
 
-    const sendEmail = async (email, user_name, user_password) => {
-        try {
-            const token = localStorage.getItem('token');
-            const res = await axios.post(`${config.apiBaseUrl}/users/send_email`, {
-                email, user_name, user_password
-            }, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            if (res.data.success) {
-                setMessage('Email sent successfully');
-                setShowSuccessModal(true);
-            } else {
-                setMessage('Failed to send email');
-                setShowErrorModal(true);
-            }
-        } catch (error) {
-            setMessage('Failed to send email');
-            setShowErrorModal(true);
-        }
-    };
-
-    const column_Ticket = useMemo(
-        () => [
-            { Header: 'Ticket ID', accessor: 'ticketid' },
-            { Header: 'UID', accessor: 'uid' },
-            { Header: 'Email', accessor: 'email' },
-            { Header: 'Telephone', accessor: 'tel' },
-            { Header: 'Role', accessor: 'role' },
-            { Header: 'Reason', accessor: 'reason' },
-            { Header: 'Status', accessor: 'status' },
-            { Header: 'Created', accessor: 'created_at', Cell: ({ value }) => new Date(value).toLocaleString() }
-        ],
-        []
-    );
-
-    const column_userAccount = useMemo(
-        () => [
-            { Header: 'UID', accessor: 'user_uid' },
-            { Header: 'Username', accessor: 'user_name' },
-            { Header: 'Role', accessor: 'user_role' },
-            { Header: 'Created', accessor: 'created_at', Cell: ({ value }) => new Date(value).toLocaleString() },
-            {
-                Header: 'Action',
-                accessor: 'action',
-                Cell: ({ row }) => (
-                    <Button
-                        className='btn btn-primary'
-                        onClick={() => sendEmail(row.original.user_name, row.original.user_name, row.original.n_user_password)}
-                    >
-                        Send Email
-                    </Button>
-                )
-            }
-        ],
-        []
-    );
-
-    const TableComponent = ({ data, columns, loading }) => {
-        const {
-            getTableProps,
-            getTableBodyProps,
-            headerGroups,
-            prepareRow,
-            page,
-            canPreviousPage,
-            canNextPage,
-            pageOptions,
-            pageCount,
-            gotoPage,
-            nextPage,
-            previousPage,
-            setPageSize,
-            state: { pageIndex, pageSize },
-        } = useTable(
-            {
-                columns,
-                data,
-                initialState: { pageIndex: 0 },
-            },
-            useSortBy,
-            usePagination
-        );
-
-        return (
-            <div>
-                {loading ? (
-                    <Spinner animation="border" />
-                ) : (
-                    <Table striped bordered hover {...getTableProps()}>
-                        <thead>
-                            {headerGroups.map(headerGroup => (
-                                <tr {...headerGroup.getHeaderGroupProps()}>
-                                    {headerGroup.headers.map(column => (
-                                        <th {...column.getHeaderProps(column.getSortByToggleProps())}>
-                                            {column.render('Header')}
-                                            <span>
-                                                {column.isSorted
-                                                    ? column.isSortedDesc
-                                                        ? ' 🔽'
-                                                        : ' 🔼'
-                                                    : ''}
-                                            </span>
-                                        </th>
-                                    ))}
-                                </tr>
-                            ))}
-                        </thead>
-                        <tbody {...getTableBodyProps()}>
-                            {page.map(row => {
-                                prepareRow(row);
-                                return (
-                                    <tr {...row.getRowProps()}>
-                                        {row.cells.map(cell => (
-                                            <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
-                                        ))}
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </Table>
-                )}
-                <div className="pagination">
-                    <button className='btn btn-primary' onClick={() => gotoPage(0)} disabled={!canPreviousPage}>
-                        {'<<'}
-                    </button>{' '}
-                    <button className='btn btn-primary' onClick={() => previousPage()} disabled={!canPreviousPage}>
-                        {'<'}
-                    </button>{' '}
-                    <button className='btn btn-primary' onClick={() => nextPage()} disabled={!canNextPage}>
-                        {'>'}
-                    </button>{' '}
-                    <button className='btn btn-primary' onClick={() => gotoPage(pageCount - 1)} disabled={!canNextPage}>
-                        {'>>'}
-                    </button>{' '}
-                    <span className='container'>
-                        Page{' '}
-                        <strong>
-                            {pageIndex + 1} of {pageOptions.length}
-                        </strong>{' '}
-                    </span>
-                </div>
-            </div>
-        );
-    };
-
     return (
         <div>
-            <CustomNavbar/>
-            <div className='container mt-5'>
-                <h1>Create User Account</h1>
-                <p>For operator only this operation allow generate user account for access the one stop service.</p>
-                <TableComponent data={request} columns={column_Ticket} loading={loadingOther} />
-                <hr/>
-                <h5>Ticket Detail</h5>
-                <form>
-                    <div className='form-group row'>
-                        <div className='col-sm-6 mb-3 mb-sm-0'>
-                        <label htmlFor='TicketID'>Select Ticket</label>
-                            <select className='form-select' id='TicketID' name="TicketID" onChange={handleTicketChange}>
-                                <option value="-">-</option>
-                                {
-                                    request.length > 0 ? (
-                                        request.map((val, key) => (
-                                            val.ticketid ? (
-                                                <option key={val.mid} value={val.ticketid}>{val.ticketid}</option>
-                                            ) : (
-                                                <option key={val.mid} value="N/A">No Ticket ID Load yet</option>
-                                            )
-                                        ))
+            <CustomNavbar user={userDetail} />
+            <Container maxWidth="lg" sx={{ mt: 5 }}>
+                <Typography variant="h4" gutterBottom>
+                    Create User Account
+                </Typography>
+                <Typography variant="subtitle1" gutterBottom>
+                    For operator only - This operation allows you to generate a user account for access to the one-stop service.
+                </Typography>
+            <Card mt={3} mb={2}>
+                <CardContent>
+                    <Typography variant="h6" gutterBottom>
+                        Open Tickets
+                    </Typography>
+                    <Divider sx={{ mb: 2 }} />
+                    <TableContainer>
+                        <Table>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell>Ticket ID</TableCell>
+                                    <TableCell>UID</TableCell>
+                                    <TableCell>Email</TableCell>
+                                    <TableCell>Telephone</TableCell>
+                                    <TableCell>Role</TableCell>
+                                    <TableCell>Reason</TableCell>
+                                    <TableCell>Status</TableCell>
+                                    <TableCell>Created</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {loadingOther ? (
+                                    <TableRow>
+                                    <TableCell colSpan={8} align="center">
+                                        <CircularProgress />
+                                    </TableCell>
+                                    </TableRow>
+                                ) : (
+                                    request.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => (
+                                    <TableRow key={row.ticketid}>
+                                        <TableCell>{row.ticketid}</TableCell>
+                                        <TableCell>{row.uid}</TableCell>
+                                        <TableCell>{row.email}</TableCell>
+                                        <TableCell>{row.tel}</TableCell>
+                                        <TableCell>{row.role}</TableCell>
+                                        <TableCell>{row.reason}</TableCell>
+                                        <TableCell>{row.status}</TableCell>
+                                        <TableCell>{new Date(row.created_at).toLocaleString()}</TableCell>
+                                    </TableRow>
+                                    ))
+                                )}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                    <TablePagination
+                        rowsPerPageOptions={[5, 10, 25]}
+                        component="div"
+                        count={request.length}
+                        page={page}
+                        onPageChange={handleChangePage}
+                        rowsPerPage={rowsPerPage}
+                        onRowsPerPageChange={handleChangeRowsPerPage}
+                    />
+                </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3 }}>
+                <CardContent>
+                    <Typography variant="h6" gutterBottom>
+                        Ticket Detail
+                    </Typography>
+                    <Divider sx={{ mb: 2 }} />
+                    <form>
+                        <Grid container spacing={2}>
+                            <Grid item xs={12} sm={6}>
+                                <InputLabel style={{ color: 'black' }}>Select Ticket ID</InputLabel>
+                                <Select
+                                    fullWidth
+                                    value={ticketID}
+                                    onChange={handleTicketChange}
+                                    displayEmpty
+                                >
+                                    <MenuItem value="-">-</MenuItem>
+                                    {request.length > 0 ? (
+                                    request.map((val) => (
+                                        <MenuItem key={val.mid} value={val.ticketid}>
+                                        {val.ticketid}
+                                        </MenuItem>
+                                    ))
                                     ) : (
-                                        <option value="-">No data has been found</option>
-                                    )
-                                }
-                            </select>
-                        </div>
-                    </div>
-                    {selectedRequest && (
-                        <div>
-                            <div className='form-group row'>
-                                <div className='col-sm-6 mb-3 mb-sm-0'>
-                                    <label htmlFor='email'>Email</label>
-                                    <input
-                                        type='text'
-                                        className='form-control'
-                                        id='email'
-                                        name='email'
-                                        value={selectedRequest.email}
-                                        readOnly
+                                    <MenuItem value="-">No data has been found</MenuItem>
+                                    )}
+                                </Select>
+                            </Grid>
+                        </Grid>
+                        {selectedRequest && (
+                            <Box mt={2}>
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12} sm={6}>
+                                        <InputLabel style={{ color: 'black' }}>Email</InputLabel>
+                                        <TextField
+                                            fullWidth
+                                            value={selectedRequest.email}
+                                            readOnly
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                        <InputLabel style={{ color: 'black' }}>Telephone</InputLabel>
+                                        <TextField
+                                            fullWidth
+                                            value={selectedRequest.tel}
+                                            readOnly
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                        <InputLabel style={{ color: 'black' }}>Role</InputLabel>
+                                        <TextField
+                                            fullWidth
+                                            value={selectedRequest.role}
+                                            readOnly
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                        <InputLabel style={{ color: 'black' }}>Ticket Status</InputLabel>
+                                        <Select
+                                            fullWidth
+                                            value={status}
+                                            onChange={(e) => setStatus(e.target.value)}
+                                            displayEmpty
+                                        >
+                                            <MenuItem value="-">-</MenuItem>
+                                            <MenuItem value="Close">Close</MenuItem>
+                                            <MenuItem value="Re-Open">Re-Open</MenuItem>
+                                        </Select>
+                                    </Grid>
+                                </Grid>
+                                <Box mt={2}>
+                                    <InputLabel style={{ color: 'black' }}>Reason</InputLabel>
+                                    <TextField
+                                        fullWidth
+                                        multiline
+                                        rows={4}
+                                        value={selectedRequest?.reason || ''}
+                                        InputProps={{
+                                            readOnly: true,
+                                        }}
                                     />
-                                </div>
-                                <div className='col-sm-6'>
-                                    <label htmlFor='tel'>Telephone</label>
-                                    <input
-                                        type='text'
-                                        className='form-control'
-                                        id='tel'
-                                        name='tel'
-                                        value={selectedRequest.tel}
-                                        readOnly
-                                    />
-                                </div>
-                            </div>
-                            <div className='form-group row'>
-                                <div className='col-sm-6 mb-3 mb-sm-0'>
-                                    <label htmlFor='role'>Role</label>
-                                    <input
-                                        type='text'
-                                        className='form-control read-only'
-                                        id='role'
-                                        name='role'
-                                        value={selectedRequest.role}
-                                        readOnly
-                                    />
-                                </div>
-                                <div className='col-sm-6'>
-                                    <label htmlFor='status'>Status</label>
-                                    <select
-                                        className='form-select'
-                                        id='status'
-                                        name='status'
-                                        value={status}
-                                        onChange={(e) => setStatus(e.target.value)}
+                                </Box>
+                                <Box mt={2} textAlign="right">
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={handleStatusChange}
+                                        disabled={loading}
                                     >
-                                        <option value="-">-</option>
-                                        <option value="Close">Close</option>
-                                        <option value="Re-Open">Re-Open</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div className='form-group row'>
-                                <div className='col-sm-12'>
-                                    <label htmlFor='reason'>Reason</label>
-                                    <textarea
-                                        className='form-control read-only'
-                                        id='reason'
-                                        name='reason'
-                                        value={selectedRequest.reason}
-                                        readOnly
-                                    />
-                                </div>
-                            </div>
-                            <div className='col-sm-12 mt-3'>
-                                <button type='submit' className='btn btn-primary' disabled={loading} onClick={handleStatusChange}>
-                                    {loading ? <Spinner as='span' animation='border' size='sm' role='status' aria-hidden='true'/> : 'Update Status'}
-                                </button>
-                            </div>
-                        </div>
-                    )}
-                </form>
-                <hr/>
-                <h5>Create User Account</h5>
-                <form onSubmit={handleSubmit}>
-                    <div className='form-group row'>
-                        <div className='col-sm-6 mb-3 mb-sm-0'>
-                            <label htmlFor='user_name'>Username</label>
-                            <input
-                                type='text'
-                                className='form-control'
-                                id='user_name'
-                                name='user_name'
-                                value={user.user_name}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
-                        <div className='col-sm-6'>
-                            <label htmlFor='user_password'>Password</label>
-                            <input
-                                type='password'
-                                className='form-control'
-                                id='user_password'
-                                name='user_password'
-                                value={user.user_password}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
-                    </div>
-                    <div className='form-group row'>
-                        <div className='col-sm-6 mb-3 mb-sm-0'>
-                            <label htmlFor='user_role'>User Role</label>
-                            <select className='form-select' id="RoleCategory" name="RoleCategory" onChange={(e) => {
-                                setUser({ ...user, user_role: e.target.value });
-                            }} required>
-                                <option value="-">-</option>
+                                    {loading ? <CircularProgress size={24} /> : 'Update Status'}
+                                    </Button>
+                                </Box>
+                            </Box>
+                        )}
+                    </form>
+                </CardContent>
+            </Card>
+
+            <Card sx={{ mb: 3 }}>
+                <CardContent>
+                    <Typography variant="h6" gutterBottom>
+                        Create User Account
+                    </Typography>
+                    <Divider sx={{ mb: 2 }} />
+
+                    <form onSubmit={handleSubmit}>
+                        <Grid container spacing={2}>
+                            <Grid item xs={12} sm={6}>
+                                <InputLabel style={{ color: 'black' }}>Username</InputLabel>
+                                <TextField
+                                    fullWidth
+                                    name="user_name"
+                                    value={user.user_name}
+                                    onChange={(e) => setUser({ ...user, user_name: e.target.value })}
+                                    required
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <InputLabel style={{ color: 'black' }}>Password</InputLabel>
+                                <TextField
+                                    fullWidth
+                                    name="user_password"
+                                    type="password"
+                                    value={user.user_password}
+                                    onChange={(e) => setUser({ ...user, user_password: e.target.value })}
+                                    required
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <InputLabel style={{ color: 'black' }}>Role</InputLabel>
+                                <Select
+                                    fullWidth
+                                    value={user.user_role}
+                                    onChange={(e) => setUser({ ...user, user_role: e.target.value })}
+                                    displayEmpty
+                                    required
+                                >
+                                        <MenuItem value="-">-</MenuItem>
                                 {userRole.length > 0 ? (
-                                    userRole.map((val, key) => (
-                                        <option key={val.role_id} value={val.role_name}>{val.role_name}</option>
+                                    userRole.map((val) => (
+                                        <MenuItem key={val.role_id} value={val.role_name}>
+                                        {val.role_name}
+                                        </MenuItem>
                                     ))
                                 ) : (
-                                    <option value="-">ไม่พบรายชื่อของตำแหน่ง</option>
+                                    <MenuItem value="-">No roles available</MenuItem>
                                 )}
-                            </select>
-                        </div>
-                        <div className='col-sm-6'>
-                            <label htmlFor='user_uid'>User</label>
-                            <input
-                                type='text'
-                                className='form-control'
-                                id='user_uid'
-                                name='user_uid'
-                                value={user.user_uid}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
-                    </div>
-                    <hr/>
-                    <button type='submit' className='btn btn-success' disabled={loading}>
-                        {loading ? <Spinner as='span' animation='border' size='sm' role='status' aria-hidden='true'/> : 'Create User'}
-                    </button>
-                </form>
-                <hr/>
-                    <TableComponent data={requestAccounts} columns={column_userAccount} loading={loadingAccount} />
-                <hr/>
-            </div>
-            <SuccessModal show={showSuccessModal} handleClose={handleCloseSuccessModal} message={message}/>
-            <ErrorModal show={showErrorModal} handleClose={handleCloseErrorModal} message={message}/>
+                                </Select>
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <InputLabel style={{ color: 'black' }}>STAFF ID</InputLabel>
+                                <TextField
+                                    fullWidth
+                                    label="User STAFF ID"
+                                    name="staff_cardid"
+                                    value={user.staff_cardid}
+                                    onChange={(e) => setUser({ ...user, staff_cardid: e.target.value })}
+                                    required
+                                />
+                            </Grid>
+                        </Grid>
+                        <Box mt={2} textAlign="right">
+                            <Button variant="contained" color="success" type="submit" disabled={loading}>
+                                {loading ? <CircularProgress size={24} /> : 'Create User'}
+                            </Button>
+                        </Box>
+                    </form>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardContent>
+                    <Typography variant="h6" gutterBottom>
+                        User Accounts
+                    </Typography>
+                    <Divider sx={{ mb: 2 }} />
+                    <TableContainer>
+                        <Table>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell>STAFF ID</TableCell>
+                                    <TableCell>Username</TableCell>
+                                    <TableCell>Role</TableCell>
+                                    <TableCell>Created</TableCell>
+                                    <TableCell>Action</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {loadingAccount ? (
+                                    <TableRow>
+                                    <TableCell colSpan={5} align="center">
+                                        <CircularProgress />
+                                    </TableCell>
+                                    </TableRow>
+                                ) : (
+                                    requestAccounts
+                                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                                    .map((row) => (
+                                        <TableRow key={row.staff_cardid}>
+                                        <TableCell>{row.staff_cardid}</TableCell>
+                                        <TableCell>{row.user_name}</TableCell>
+                                        <TableCell>{row.user_role}</TableCell>
+                                        <TableCell>{new Date(row.created_at).toLocaleString()}</TableCell>
+                                        <TableCell>
+                                            <Button
+                                            variant="contained"
+                                            onClick={() =>
+                                                sendEmail(row.user_name, row.user_name, row.user_ac_password)
+                                            }
+                                            >
+                                            Send Email
+                                            </Button>
+                                        </TableCell>
+                                        </TableRow>
+                                    ))
+                                )}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                    <TablePagination
+                        rowsPerPageOptions={[5, 10, 25]}
+                        component="div"
+                        count={requestAccounts.length}
+                        page={page}
+                        onPageChange={handleChangePage}
+                        rowsPerPage={rowsPerPage}
+                        onRowsPerPageChange={handleChangeRowsPerPage}
+                    />
+                </CardContent>
+            </Card>
+            </Container>
+            
+            <SuccessModal show={showSuccessModal} handleClose={handleCloseSuccessModal} message={message} />
+            <ErrorModal show={showErrorModal} handleClose={handleCloseErrorModal} message={message} />
         </div>
-    )
+    );
 }

@@ -33,10 +33,18 @@ npm install
 
 ## Running the Application
 To start the development server, run:
+
 ```bash
-npm start
+npm run start:local
 ```
-This will start the React application on http://localhost:3000.
+To develop in local environment when developer want to develop API geteway from local core lambda
+
+```bash
+npm run start:dev
+```
+To allow developer that want to implement UX/UI only
+
+### This will start the React application on http://localhost:3000.
 
 ## Contributing
 We welcome contributions from the community. If you would like to contribute, please follow these steps:

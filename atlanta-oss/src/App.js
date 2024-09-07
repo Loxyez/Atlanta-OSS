@@ -3,6 +3,7 @@ import { Analytics } from "@vercel/analytics/react";
 import ReactDOM from 'react-dom';
 import { BrowserRouter as Router, Route, Routes, useNavigate, useLocation } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import '@fortawesome/fontawesome-free/css/all.min.css';
 import axios from 'axios';
 import config from './utils/config';
 import Modal from 'react-bootstrap/Modal';
@@ -16,7 +17,17 @@ import Unauthenticated from './components/alert-page/Unauthenticated';
 import PageNotFound from './components/alert-page/PageNotFound';
 import Login from './components/login/login';
 import ForgotPassword from './components/login/forget_password';
+import LandingPage from './components/Landing/landing-page';
 import ProtectedRoute from './components/protectedRoute/protectedRoute';
+import LeaveRequest from './components/request-form/request-leave';
+import LeaveManagement from './components/staff-management/leave-management';
+import CraeteStaff from './components/staff-management/create-staff-detail';
+import StaffManagementDetail from './components/staff-management/staff-management';
+import PublicRoute from './publicroute/PublicRoute';
+import CreateItem from './item-management/create_item';
+import CreateCategory from './item-management/create_category';
+import ManageStock from './item-management/manage_stock';
+import ViewStock from './item-management/view_stock';
 
 function SessionExpirationModal({show, handleExtendSession, handleClose }){
   return (
@@ -117,10 +128,50 @@ function App () {
         <Route path="/" exact element={<Home/>} />
         <Route path='/request_form' element={<RequestForm/>}/>
         <Route path='/create_user_account' element={
-          <ProtectedRoute> 
+          <ProtectedRoute allowedRoles={['operator']}> 
             <CreateAccount/> 
           </ProtectedRoute>}
         />
+        <Route path='/request_leave' element={
+          <ProtectedRoute allowedRoles={['Manager', 'Clerk', 'Engineer', 'Trainee', 'Developer', 'operator']}>
+            <LeaveRequest/>
+          </ProtectedRoute>
+        }/>
+        <Route path='/manage_leave' element={
+          <ProtectedRoute allowedRoles={['Manager', 'operator', 'Developer']}>
+            <LeaveManagement />
+          </ProtectedRoute>
+        }/>
+        <Route path='/create_staff' element={
+          <ProtectedRoute allowedRoles={['Manager', 'operator', 'Developer']}>
+            <CraeteStaff />
+          </ProtectedRoute>
+        }/>
+        <Route path='/staff_list' element={
+          <ProtectedRoute allowedRoles={['Manager', 'operator', 'Developer']}>
+            <StaffManagementDetail />
+          </ProtectedRoute>
+        }/>
+        <Route path='/create_item' element={
+          <ProtectedRoute allowedRoles={['Manager', 'operator', 'Developer']}>
+            <CreateItem />
+          </ProtectedRoute>
+        }/>
+        <Route path='/create_category' element={
+          <ProtectedRoute allowedRoles={['Manager', 'operator', 'Developer']}>
+            <CreateCategory />
+          </ProtectedRoute>
+        }/>
+        <Route path='/stock_management' element={
+          <ProtectedRoute allowedRoles={['Manager', 'operator', 'Developer']}>
+            <ManageStock />
+          </ProtectedRoute>
+        }/>
+        <Route path='/view_stock' element={
+          <ProtectedRoute allowedRoles={['Manager', 'Clerk', 'Engineer', 'Trainee', 'Developer', 'operator']}>
+            <ViewStock/>
+          </ProtectedRoute>
+        }/>
 
         {/* Unauthentication */}
         <Route path="/unauthorized" element={<Unauthenticated />} />
@@ -128,8 +179,17 @@ function App () {
         <Route path="*" element={<PageNotFound />} />
         {/* Operation Login Path */}
         <Route path='/login_operator_account' element={<LoginOperator/>}/>
-        <Route path='/login' element={<Login/>}/>
+        <Route path='/login' element={
+          <PublicRoute>
+            <Login />
+          </PublicRoute>} 
+        />
         <Route path='/forget_password' element={<ForgotPassword/>}/>
+        <Route path='/landing' element={
+          <ProtectedRoute allowedRoles={['Manager', 'Clerk', 'Engineer', 'Trainee', 'Developer', 'operator']}>
+            <LandingPage/>
+          </ProtectedRoute>}
+        />
       </Routes>
       <SessionExpirationModal
         show={showModal}
