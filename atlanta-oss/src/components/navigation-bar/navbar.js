@@ -181,7 +181,7 @@ export default function CustomNavbar() {
         account: {
             roles: ['Manager', 'operator', 'Developer', 'Clerk', 'Engineer', 'Trainee', 'Intern'],
             items: [
-                { label: 'แก้ไขข้อมูล/บัญชี', icon: <AccountCircle />, path: '/account' },
+                { label: 'แก้ไขข้อมูล/บัญชี', icon: <AccountCircle />, path: '/edit_account' },
                 { label: 'ออกจากระบบ', icon: <ExitToApp />, onClick: handleLogout }
             ]
         },

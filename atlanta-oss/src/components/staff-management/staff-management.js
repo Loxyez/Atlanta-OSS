@@ -71,7 +71,7 @@ export default function StaffManagementDetail () {
         const token = localStorage.getItem('token') || sessionStorage.getItem('token');
         setLoading(true);
         try {
-            const response = await axios.get(`${config.apiBaseUrl}/staffs/get_staff_detils`, {
+            const response = await axios.get(`${config.apiBaseUrl}/staffs/get_staff_details`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setStaffDetails(response.data);

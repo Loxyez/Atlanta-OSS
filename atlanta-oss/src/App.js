@@ -28,6 +28,7 @@ import CreateItem from './item-management/create_item';
 import CreateCategory from './item-management/create_category';
 import ManageStock from './item-management/manage_stock';
 import ViewStock from './item-management/view_stock';
+import EditUserAccount from './components/edit-user-account/Edit_Account';
 
 function SessionExpirationModal({show, handleExtendSession, handleClose }){
   return (
@@ -163,6 +164,11 @@ function App () {
         <Route path='/view_stock' element={
           <ProtectedRoute allowedRoles={['Manager', 'Clerk', 'Engineer', 'Trainee', 'Developer', 'operator']}>
             <ViewStock/>
+          </ProtectedRoute>
+        }/>
+        <Route path='/edit_account' element={
+          <ProtectedRoute allowedRoles={['Manager', 'Clerk', 'Engineer', 'Trainee', 'Developer', 'operator']}>
+            <EditUserAccount/>
           </ProtectedRoute>
         }/>
 
