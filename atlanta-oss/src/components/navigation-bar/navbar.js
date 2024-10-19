@@ -319,7 +319,7 @@ export default function CustomNavbar() {
                         <>
                             {getRoleBasedNavItems('stockManagement').length > 0 && renderDesktopMenu('stockManagement', getRoleBasedNavItems('stockManagement'), stockManagementAnchorEl, handleMenuClose)}
                             {getRoleBasedNavItems('staffManagement').length > 0 && renderDesktopMenu('staffManagement', getRoleBasedNavItems('staffManagement'), staffManagementAnchorEl, handleMenuClose)}
-                            {getRoleBasedNavItems('taskManagement').length > 0 && renderDesktopMenu('taskManagement', getRoleBasedNavItems('taskManagement'), taskManagementAnchorEl, handleMenuClose)}
+                            {/* {getRoleBasedNavItems('taskManagement').length > 0 && renderDesktopMenu('taskManagement', getRoleBasedNavItems('taskManagement'), taskManagementAnchorEl, handleMenuClose)} */}
                             {getRoleBasedNavItems('requests').length > 0 && renderDesktopMenu('requests', getRoleBasedNavItems('requests'), requestsAnchorEl, handleMenuClose)}
                             {getRoleBasedNavItems('account').length > 0 && renderDesktopMenu('account', getRoleBasedNavItems('account'), accountAnchorEl, handleMenuClose)}
                         </>
