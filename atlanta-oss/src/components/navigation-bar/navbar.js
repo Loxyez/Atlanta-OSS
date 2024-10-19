@@ -312,7 +312,14 @@ export default function CustomNavbar() {
         <>
             <AppBar position="static">
                 <Toolbar>
-                    <Typography onClick={() => { navigate('/'); setMobileOpen(false); }} variant="h6" sx={{ flexGrow: 1 }}>
+                    <Typography 
+                        onClick={() => { 
+                            navigate(user.name != '' ? '/landing' : '/'); 
+                            setMobileOpen(false); 
+                        }} 
+                        variant="h6" 
+                        sx={{ flexGrow: 1 }}
+                    >
                         <Dashboard/> Atlanta-OSS
                     </Typography>
                     {!isMobile && isLoggedIn && (
