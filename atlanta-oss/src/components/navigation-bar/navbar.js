@@ -169,7 +169,7 @@ export default function CustomNavbar() {
             roles: ['Manager', 'operator', 'Developer', 'Clerk', 'Engineer', 'Trainee', 'Intern'],
             items: [
                 { label: 'จัดการข้อมูลงาน', icon: <Task />, path: '/task_list' },
-                { label: 'เพิ่มข้อมูลงาน', icon: <PostAdd />, path: '/craete_task' },
+                { label: 'เพิ่มข้อมูลงาน', icon: <PostAdd />, path: '/create_task' },
             ]
         },
         requests: {
