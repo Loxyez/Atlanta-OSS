@@ -31,6 +31,7 @@ import ViewStock from './item-management/view_stock';
 import EditUserAccount from './components/edit-user-account/Edit_Account';
 import CreateTask from './components/work-management/create-task';
 import TaskManagement from './components/work-management/task-management';
+import TaskStatus from './components/work-management/task-status';
 
 function SessionExpirationModal({show, handleExtendSession, handleClose }){
   return (
@@ -181,6 +182,11 @@ function App () {
         <Route path='/task_management' element={
           <ProtectedRoute allowedRoles={['Manager', 'Clerk', 'Engineer', 'Trainee', 'Developer', 'operator']}>
             <TaskManagement/>
+          </ProtectedRoute>
+        }/>
+        <Route path='/task_status' element={
+          <ProtectedRoute allowedRoles={['Manager', 'Clerk', 'Engineer', 'Trainee', 'Developer', 'operator']}>
+            <TaskStatus/>
           </ProtectedRoute>
         }/>
 

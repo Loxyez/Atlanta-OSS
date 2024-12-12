@@ -37,6 +37,7 @@ import {
     CalendarMonth,
     Task,
     PostAdd,
+    Sync,
 } from '@mui/icons-material';
 import { useNavigate } from "react-router-dom";
 import SuccessModal from "../Modal/SuccessModal";
@@ -169,6 +170,7 @@ export default function CustomNavbar() {
             roles: ['Manager', 'operator', 'Developer', 'Clerk', 'Engineer', 'Trainee', 'Intern'],
             items: [
                 { label: 'จัดการข้อมูลงาน', icon: <Task />, path: '/task_management' },
+                { label: 'จัดการสถานะงาน', icon: <Sync />, path: '/task_status' },
                 { label: 'เพิ่มข้อมูลงาน', icon: <PostAdd />, path: '/create_task' },
             ]
         },

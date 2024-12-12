@@ -32,7 +32,7 @@ export default function CreateTask() {
   const [memberId, setMemberId] = useState(null);
   const [staffCardId, setStaffCardId] = useState('');
   const [memberName, setMemberName] = useState('');
-  const [staffNickname, setStaffNickname] = useState('');
+  const [staffName, setStaffName] = useState('');
   const [taskPic, setTaskPic] = useState(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -79,7 +79,7 @@ export default function CreateTask() {
 
   const handleStaffChange = (e, value) => {
     setStaffCardId(value?.staff_cardid || '');
-    setStaffNickname(value?.staff_nickname || '');
+    setStaffName(value?.staff_name || '');
   };
 
   const handleFileChange = (e) => {
@@ -97,7 +97,7 @@ export default function CreateTask() {
     setMemberId('');
     setMemberName('');
     setStaffCardId('');
-    setStaffNickname('');
+    setStaffName('');
     setTaskPic(null);
   };
 
@@ -222,7 +222,7 @@ export default function CreateTask() {
               <Grid item xs={12} sm={6}>
                 <Autocomplete
                     options={staffDetails}
-                    getOptionLabel={(option) => option.staff_nickname || ''} 
+                    getOptionLabel={(option) => option.staff_name || ''} 
                     onChange={handleStaffChange}
                     renderInput={(params) => (
                     <TextField 
