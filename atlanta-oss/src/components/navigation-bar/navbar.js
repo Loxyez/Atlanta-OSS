@@ -37,6 +37,7 @@ import {
     CalendarMonth,
     Task,
     PostAdd,
+    Sync,
 } from '@mui/icons-material';
 import { useNavigate } from "react-router-dom";
 import SuccessModal from "../Modal/SuccessModal";
@@ -168,8 +169,9 @@ export default function CustomNavbar() {
         taskManagement: {
             roles: ['Manager', 'operator', 'Developer', 'Clerk', 'Engineer', 'Trainee', 'Intern'],
             items: [
-                { label: 'จัดการข้อมูลงาน', icon: <Task />, path: '/task_list' },
-                { label: 'เพิ่มข้อมูลงาน', icon: <PostAdd />, path: '/craete_task' },
+                { label: 'จัดการข้อมูลงาน', icon: <Task />, path: '/task_management' },
+                { label: 'จัดการสถานะงาน', icon: <Sync />, path: '/task_status' },
+                { label: 'เพิ่มข้อมูลงาน', icon: <PostAdd />, path: '/create_task' },
             ]
         },
         requests: {
@@ -326,7 +328,7 @@ export default function CustomNavbar() {
                         <>
                             {getRoleBasedNavItems('stockManagement').length > 0 && renderDesktopMenu('stockManagement', getRoleBasedNavItems('stockManagement'), stockManagementAnchorEl, handleMenuClose)}
                             {getRoleBasedNavItems('staffManagement').length > 0 && renderDesktopMenu('staffManagement', getRoleBasedNavItems('staffManagement'), staffManagementAnchorEl, handleMenuClose)}
-                            {/* {getRoleBasedNavItems('taskManagement').length > 0 && renderDesktopMenu('taskManagement', getRoleBasedNavItems('taskManagement'), taskManagementAnchorEl, handleMenuClose)} */}
+                            {getRoleBasedNavItems('taskManagement').length > 0 && renderDesktopMenu('taskManagement', getRoleBasedNavItems('taskManagement'), taskManagementAnchorEl, handleMenuClose)}
                             {getRoleBasedNavItems('requests').length > 0 && renderDesktopMenu('requests', getRoleBasedNavItems('requests'), requestsAnchorEl, handleMenuClose)}
                             {getRoleBasedNavItems('account').length > 0 && renderDesktopMenu('account', getRoleBasedNavItems('account'), accountAnchorEl, handleMenuClose)}
                         </>
