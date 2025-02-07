@@ -126,7 +126,7 @@ export default function LandingPage() {
                                     จัดการงาน ทั้งหมด / เฉพาะฉัน
                                 </Typography>
                                 <Button 
-                                    onClick={() => { navigate('/request_form') }} 
+                                    onClick={() => { navigate('/create_task') }} 
                                     variant='contained' 
                                     color="primary" 
                                     sx={{ mt: 2, width: '100%'}}
