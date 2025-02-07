@@ -323,7 +323,7 @@ export default function TaskManagement() {
                         <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                             {imageToShow ? (
                                 <img
-                                    src={`${config.apiBaseUrl}/uploads/${imageToShow}`}
+                                    src={`${imageToShow}`}
                                     alt="Task"
                                     style={{ maxWidth: '100%', maxHeight: '400px' }}
                                 />
