@@ -24,9 +24,13 @@ import { CloudUpload } from '@mui/icons-material';
 
 export default function CreateTask() {
   const [members, setMembers] = useState([]);
+  const [deviceModel, setDeviceModel] = useState([]);
+  const [deviceCategory, setDeviceCategory] = useState([]);
   const [staffDetails, setStaffDetails] = useState([]);
   const [taskDetail, setTaskDetail] = useState('');
   const [taskFixDetail, setTaskFixDetail] = useState('');
+  const [taskDeviceModel, setTaskDeviceModel] = useState('');
+  const [taskDeviceCategory, setTaskDeviceCategory] = useState('');
   const [taskDeviceDetail, setTaskDeviceDetail] = useState('');
   const [taskEndDate, setTaskEndDate] = useState(null);
   const [memberId, setMemberId] = useState(null);
@@ -41,6 +45,12 @@ export default function CreateTask() {
   const [showAddMemberDialog, setShowAddMemberDialog] = useState(false);
   const [newMemberName, setNewMemberName] = useState('');
   const [newMemberPhone, setNewMemberPhone] = useState('');
+
+  const [showAddDeviceModelDialog, setShowAddDeviceModelDialog] = useState(false);
+  const [newDeviceModel, setNewDeviceModel] = useState('');
+
+  const [showAddDeviceCategoryDialog, setShowAddDeviceCategoryDialog] = useState(false);
+  const [newDeviceCategory, setNewDeviceCategory] = useState('');
 
   // Fetch members and staff details
   useEffect(() => {
@@ -68,13 +78,47 @@ export default function CreateTask() {
       }
     };
 
+    const fetchDeviceModel = async () => {
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      try {
+        const res = await axios.get(`${config.apiBaseUrl}/devices/get_device_models`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setDeviceModel(res.data);
+      } catch (error) {
+        console.error('Error fetching device models', error);
+      }
+    };
+
+    const fetchDeviceCategory = async () => {
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      try {
+        const res = await axios.get(`${config.apiBaseUrl}/devices/get_device_category`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setDeviceCategory(res.data);
+      } catch (error) {
+        console.error('Error fetching device categories', error);
+      }
+    };
+
     fetchMembers();
     fetchStaffDetails();
+    fetchDeviceModel();
+    fetchDeviceCategory();
   }, []);
 
   const handleMemberChange = (e, value) => {
     setMemberId(value?.memberid || '');
     setMemberName(value?.member_name || '');
+  };
+
+  const handleDeviceModelChange = (e, value) => {
+    setTaskDeviceModel(value?.name || '');
+  };
+
+  const handleDeviceCategoryChange = (e, value) => {
+    setTaskDeviceCategory(value?.name || '');
   };
 
   const handleStaffChange = (e, value) => {
@@ -92,6 +136,8 @@ export default function CreateTask() {
   const resetForm = () => {
     setTaskDetail('');
     setTaskFixDetail('');
+    setTaskDeviceModel('');
+    setTaskDeviceCategory('');
     setTaskDeviceDetail('');
     setTaskEndDate(null);
     setMemberId('');
@@ -113,6 +159,8 @@ export default function CreateTask() {
     taskData.append('task_status', 'Pending');
     taskData.append('task_detail', taskDetail);
     taskData.append('task_fix_detail', taskFixDetail);
+    taskData.append('task_device_model', taskDeviceModel);
+    taskData.append('task_device_category', taskDeviceCategory);
     taskData.append('task_device_detail', taskDeviceDetail);
     taskData.append('staff_cardid', staffCardId);
     taskData.append('task_end_date_at', formattedTaskEndDate);
@@ -139,7 +187,13 @@ export default function CreateTask() {
         setShowErrorModal(true);
       }
     } catch (error) {
-      setError('เกิดข้อผิดพลาดขณะเพิ่มข้อมูลงาน');
+      // if return status is 400
+      console.log(error.response.status);
+      if (error.response.status === 400) {
+        setError(error.response.data.message);
+      } else {
+        setError('เกิดข้อผิดพลาดขณะเพิ่มข้อมูลงาน');
+      }
       setShowErrorModal(true);
     }
   };
@@ -153,6 +207,18 @@ export default function CreateTask() {
     setShowAddMemberDialog(false);
     setNewMemberName('');
     setNewMemberPhone('');
+  };
+
+  const openAddDeviceModelDialog = () => setShowAddDeviceModelDialog(true);
+  const closeAddDeviceModelDialog = () => {
+    setShowAddDeviceModelDialog(false);
+    setNewDeviceModel('');
+  };
+
+  const openAddDeviceCategoryDialog = () => setShowAddDeviceCategoryDialog(true);
+  const closeAddDeviceCategoryDialog = () => {
+    setShowAddDeviceCategoryDialog(false);
+    setNewDeviceCategory('');
   };
 
   const handleAddMember = async () => {
@@ -185,12 +251,61 @@ export default function CreateTask() {
     }
   };
 
+  const handleAddDeviceModel = async () => {
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    try {
+      const res = await axios.post(
+        `${config.apiBaseUrl}/devices/add_device_model`, 
+        { name: newDeviceModel },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+  
+      if (res.status === 201) {
+        setSuccess('เพิ่มรุ่นอุปกรณ์ใหม่เรียบร้อย');
+        setShowSuccessModal(true); // เปิด Success Modal
+        setDeviceModel((prev) => [...prev, res.data]);
+        closeAddDeviceModelDialog(); // ปิด Dialog เพิ่มรุ่นอุปกรณ์
+      } else {
+        setError('ไม่สามารถเพิ่มรุ่นอุปกรณ์ได้');
+        setShowErrorModal(true); // เปิด Error Modal
+      }
+    } catch (error) {
+      setError('เกิดข้อผิดพลาดขณะเพิ่มรุ่นอุปกรณ์');
+      setShowErrorModal(true); // เปิด Error Modal
+    }
+  }
+
+  const handleAddDeviceCategory = async () => {
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    try {
+      const res = await axios.post(
+        `${config.apiBaseUrl}/devices/add_device_category`, 
+        { name: newDeviceCategory },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (res.status === 201) {
+        setSuccess('เพิ่มประเภทอุปกรณ์ใหม่เรียบร้อย');
+        setShowSuccessModal(true); // เปิด Success Modal
+        setDeviceCategory((prev) => [...prev, res.data]);
+        closeAddDeviceCategoryDialog(); // ปิด Dialog เพิ่มประเภทอุปกรณ์
+      } else {
+        setError('ไม่สามารถเพิ่มประเภทอุปกรณ์ได้');
+        setShowErrorModal(true); // เปิด Error Modal
+      }
+    }
+    catch (error) {
+      setError('เกิดข้อผิดพลาดขณะเพิ่มประเภทอุปกรณ์');
+      setShowErrorModal(true); // เปิด Error Modal
+    }
+  }
+
   return (
     <div>
       <CustomNavbar />
       <Container maxWidth="md" sx={{ mt: 4 }}>
         <Paper elevation={3} sx={{ p: 4 }}>
-          <Typography variant="h4" gutterBottom>เพิ่มงานใหม่</Typography>
+          <Typography variant="h4" gutterBottom>เพิ่มข้อมูลงาน</Typography>
           <form onSubmit={handleSubmit}>
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
@@ -261,11 +376,61 @@ export default function CreateTask() {
                     fullWidth
                     required
                 />
-                </Grid>
+              </Grid>
 
-                <Grid item xs={12}>
+              <Grid item xs={6}>
+                <Autocomplete
+                    options={deviceCategory}
+                    getOptionLabel={(option) => option.name}
+                    onChange={handleDeviceCategoryChange}
+                    renderInput={(params) => (
+                      <TextField 
+                          {...params} 
+                          label="เลือกประเภทอุปกรณ์" 
+                          fullWidth 
+                          required
+                          InputProps={{
+                            ...params.InputProps,
+                            endAdornment: (
+                              <>
+                                {params.InputProps.endAdornment}
+                                <Button onClick={openAddDeviceCategoryDialog}>เพิ่มประเภทอุปกรณ์</Button>
+                              </>
+                            )
+                          }}
+                      />
+                    )}
+                />
+              </Grid>
+
+              <Grid item xs={6}>
+                <Autocomplete
+                    options={deviceModel}
+                    getOptionLabel={(option) => option.name}
+                    onChange={handleDeviceModelChange}
+                    renderInput={(params) => (
+                      <TextField 
+                          {...params} 
+                          label="เลือกรุ่นอุปกรณ์" 
+                          fullWidth 
+                          required
+                          InputProps={{
+                            ...params.InputProps,
+                            endAdornment: (
+                              <>
+                                {params.InputProps.endAdornment}
+                                <Button onClick={openAddDeviceModelDialog}>เพิ่มรุ่นอุปกรณ์</Button>
+                              </>
+                            )
+                          }}
+                      />
+                    )}
+                />
+              </Grid>
+
+              <Grid item xs={12}>
                 <TextField
-                    label="Device Detail"
+                    label="รายระเอียดอุปกรณ์"
                     value={taskDeviceDetail}
                     onChange={(e) => setTaskDeviceDetail(e.target.value)}
                     fullWidth
@@ -275,7 +440,7 @@ export default function CreateTask() {
               <Grid item xs={12} sm={6}>
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                   <DatePicker
-                    label="วันที่สิ้นสุด"
+                    label="วันที่กำหนดส่งงาน"
                     value={taskEndDate}
                     onChange={(newValue) => setTaskEndDate(newValue)}
                     renderInput={(params) => <TextField {...params} fullWidth />}
@@ -360,6 +525,52 @@ export default function CreateTask() {
             ยกเลิก
           </Button>
           <Button onClick={handleAddMember} color="primary">
+            บันทึก
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Add Device Model Dialog */}
+      <Dialog open={showAddDeviceModelDialog} onClose={closeAddDeviceModelDialog}>
+        <DialogTitle>เพิ่มรุ่นอุปกรณ์ใหม่</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="ชื่อรุ่นอุปกรณ์"
+            value={newDeviceModel}
+            onChange={(e) => setNewDeviceModel(e.target.value)}
+            fullWidth
+            required
+            sx={{ mb: 2 }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeAddDeviceModelDialog} color="error">
+            ยกเลิก
+          </Button>
+          <Button onClick={handleAddDeviceModel} color="primary">
+            บันทึก
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Add Device Category Dialog */}
+      <Dialog open={showAddDeviceCategoryDialog} onClose={closeAddDeviceCategoryDialog}>
+        <DialogTitle>เพิ่มประเภทอุปกรณ์ใหม่</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="ชื่อประเภทอุปกรณ์"
+            value={newDeviceCategory}
+            onChange={(e) => setNewDeviceCategory(e.target.value)}
+            fullWidth
+            required
+            sx={{ mb: 2 }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeAddDeviceCategoryDialog} color="error">
+            ยกเลิก
+          </Button>
+          <Button onClick={handleAddDeviceCategory} color="primary">
             บันทึก
           </Button>
         </DialogActions>
