@@ -21,7 +21,7 @@ import LandingPage from './components/Landing/landing-page';
 import ProtectedRoute from './components/protectedRoute/protectedRoute';
 import LeaveRequest from './components/request-form/request-leave';
 import LeaveManagement from './components/staff-management/leave-management';
-import CraeteStaff from './components/staff-management/create-staff-detail';
+import CreateStaff from './components/staff-management/create-staff-detail';
 import StaffManagementDetail from './components/staff-management/staff-management';
 import PublicRoute from './publicroute/PublicRoute';
 import CreateItem from './item-management/create_item';
@@ -33,24 +33,35 @@ import CreateTask from './components/work-management/create-task';
 import TaskManagement from './components/work-management/task-management';
 import TaskStatus from './components/work-management/task-status';
 
-function SessionExpirationModal({show, handleExtendSession, handleClose }){
+// Centralized role-based access control
+const RoleAccess = {
+  CREATE_USER: ['operator'],
+  LEAVE_REQUEST: ['Manager', 'Clerk', 'Engineer', 'Trainee', 'Developer', 'operator'],
+  LEAVE_MANAGEMENT: ['Manager', 'operator', 'Developer'],
+  STAFF_MANAGEMENT: ['Manager', 'operator', 'Developer'],
+  ITEM_MANAGEMENT: ['Manager', 'operator', 'Developer'],
+  STOCK_VIEW: ['Manager', 'Clerk', 'Engineer', 'Trainee', 'Developer', 'operator'],
+  USER_EDIT: ['Manager', 'Clerk', 'Engineer', 'Trainee', 'Developer', 'operator'],
+  TASK_MANAGEMENT: ['Manager', 'Clerk', 'Engineer', 'Trainee', 'Developer', 'operator']
+};
+
+function SessionExpirationModal({ show, handleExtendSession, handleClose }) {
   return (
     <Modal show={show} onHide={handleClose}>
-          <Modal.Header closeButton>
-              <Modal.Title>เซสชั่นกำลังจะหมดอายุ</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>เซสชั่นกำลังจะหมดอายุในอีก 5 นาทีคุณต้องการต่อ เซสชั่น หรือไม่?</Modal.Body>
-          <Modal.Footer>
-              <Button variant="primary" onClick={handleExtendSession}>
-                  ฉันยังอยู่/ยังใช้งานอยู่
-              </Button>
-          </Modal.Footer>
-      </Modal>
-  )
+      <Modal.Header closeButton>
+        <Modal.Title>Session Expiring</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>Your session will expire in 5 minutes. Would you like to extend it?</Modal.Body>
+      <Modal.Footer>
+        <Button variant="primary" onClick={handleExtendSession}>
+          Stay Logged In
+        </Button>
+      </Modal.Footer>
+    </Modal>
+  );
 }
 
-function App () {
-
+function App() {
   const [showModal, setShowModal] = useState(false);
   const [isTokenExpired, setIsTokenExpired] = useState(false);
   const navigate = useNavigate();
@@ -60,14 +71,9 @@ function App () {
     try {
       const base64Url = token.split('.')[1];
       const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(
-          atob(base64)
-              .split('')
-              .map(function (c) {
-                  return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-              })
-              .join('')
-      );
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
+        '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+      ).join(''));
       return JSON.parse(jsonPayload);
     } catch (e) {
       console.error("Invalid token format", e);
@@ -79,21 +85,16 @@ function App () {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if(token) {
+    if (token) {
       const decodedToken = parseJwt(token);
       console.log(decodedToken)
       const expirationTime = decodedToken.exp * 1000 - Date.now();
 
       const timer = setTimeout(() => {
-        if (location.pathname !== '/' 
-          && location.pathname !== '/login_operator_account' 
-          && location.pathname !== '/request_form' 
-          && location.pathname !== '/login'
-          && location.pathname !== '/forget_password'
-        ) {
+        if (!['/', '/login_operator_account', '/request_form', '/login', '/forget_password'].includes(location.pathname)) {
           setShowModal(true);
         }
-      }, expirationTime - 300000); // Show modal 5 minute before expiration
+      }, expirationTime - 300000); // Show modal 5 minutes before expiration
 
       return () => clearTimeout(timer);
     }
@@ -101,20 +102,20 @@ function App () {
 
   const extendSession = async () => {
     try {
-        const res = await axios.post(`${config.apiBaseUrl}/auth/extend_session`, {}, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
-        localStorage.setItem('token', res.data.token);
-        setShowModal(false);
-        window.location.reload();
+      const res = await axios.post(`${config.apiBaseUrl}/auth/extend_session`, {}, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      localStorage.setItem('token', res.data.token);
+      setShowModal(false);
+      window.location.reload();
     } catch (err) {
-        console.error('Error extending session:', err);
-        navigate('/unauthorized');
-        setIsTokenExpired(true);
+      console.error('Error extending session:', err);
+      navigate('/unauthorized');
+      setIsTokenExpired(true);
     }
-  }
+  };
 
   useEffect(() => {
     if (isTokenExpired) {
@@ -126,111 +127,43 @@ function App () {
 
   return (
     <div>
-      <Analytics/>
+      <Analytics />
       <Routes>
-        {/* Normal Path */}
-        <Route path="/" exact element={<Home/>} />
-        <Route path='/request_form' element={<RequestForm/>}/>
-        <Route path='/create_user_account' element={
-          <ProtectedRoute allowedRoles={['operator']}> 
-            <CreateAccount/> 
-          </ProtectedRoute>}
-        />
-        <Route path='/request_leave' element={
-          <ProtectedRoute allowedRoles={['Manager', 'Clerk', 'Engineer', 'Trainee', 'Developer', 'operator']}>
-            <LeaveRequest/>
-          </ProtectedRoute>
-        }/>
-        <Route path='/manage_leave' element={
-          <ProtectedRoute allowedRoles={['Manager', 'operator', 'Developer']}>
-            <LeaveManagement />
-          </ProtectedRoute>
-        }/>
-        <Route path='/create_staff' element={
-          <ProtectedRoute allowedRoles={['Manager', 'operator', 'Developer']}>
-            <CraeteStaff />
-          </ProtectedRoute>
-        }/>
-        <Route path='/staff_list' element={
-          <ProtectedRoute allowedRoles={['Manager', 'operator', 'Developer']}>
-            <StaffManagementDetail />
-          </ProtectedRoute>
-        }/>
-        <Route path='/create_item' element={
-          <ProtectedRoute allowedRoles={['Manager', 'operator', 'Developer']}>
-            <CreateItem />
-          </ProtectedRoute>
-        }/>
-        <Route path='/create_category' element={
-          <ProtectedRoute allowedRoles={['Manager', 'operator', 'Developer']}>
-            <CreateCategory />
-          </ProtectedRoute>
-        }/>
-        <Route path='/stock_management' element={
-          <ProtectedRoute allowedRoles={['Manager', 'operator', 'Developer']}>
-            <ManageStock />
-          </ProtectedRoute>
-        }/>
-        <Route path='/view_stock' element={
-          <ProtectedRoute allowedRoles={['Manager', 'Clerk', 'Engineer', 'Trainee', 'Developer', 'operator']}>
-            <ViewStock/>
-          </ProtectedRoute>
-        }/>
-        <Route path='/edit_account' element={
-          <ProtectedRoute allowedRoles={['Manager', 'Clerk', 'Engineer', 'Trainee', 'Developer', 'operator']}>
-            <EditUserAccount/>
-          </ProtectedRoute>
-        }/>
-        <Route path='/create_task' element={
-          <ProtectedRoute allowedRoles={['Manager', 'Clerk', 'Engineer', 'Trainee', 'Developer', 'operator']}>
-            <CreateTask/>
-          </ProtectedRoute>
-        }/>
-        <Route path='/task_management' element={
-          <ProtectedRoute allowedRoles={['Manager', 'Clerk', 'Engineer', 'Trainee', 'Developer', 'operator']}>
-            <TaskManagement/>
-          </ProtectedRoute>
-        }/>
-        <Route path='/task_status' element={
-          <ProtectedRoute allowedRoles={['Manager', 'Clerk', 'Engineer', 'Trainee', 'Developer', 'operator']}>
-            <TaskStatus/>
-          </ProtectedRoute>
-        }/>
-
-
-        {/* Unauthentication */}
+        {/* Public Routes */}
+        <Route path="/" exact element={<Home />} />
+        <Route path="/request_form" element={<RequestForm />} />
         <Route path="/unauthorized" element={<Unauthenticated />} />
-        {/* Page Not Found */}
         <Route path="*" element={<PageNotFound />} />
-        {/* Operation Login Path */}
-        <Route path='/login_operator_account' element={<LoginOperator/>}/>
-        <Route path='/login' element={
-          <PublicRoute>
-            <Login />
-          </PublicRoute>} 
-        />
-        <Route path='/forget_password' element={<ForgotPassword/>}/>
-        <Route path='/landing' element={
-          <ProtectedRoute allowedRoles={['Manager', 'Clerk', 'Engineer', 'Trainee', 'Developer', 'operator']}>
-            <LandingPage/>
-          </ProtectedRoute>}
-        />
+
+        {/* Authentication Routes */}
+        <Route path="/login_operator_account" element={<LoginOperator />} />
+        <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+        <Route path="/forget_password" element={<ForgotPassword />} />
+
+        {/* Protected Routes */}
+        <Route path="/create_user_account" element={<ProtectedRoute allowedRoles={RoleAccess.CREATE_USER}><CreateAccount /></ProtectedRoute>} />
+        <Route path="/request_leave" element={<ProtectedRoute allowedRoles={RoleAccess.LEAVE_REQUEST}><LeaveRequest /></ProtectedRoute>} />
+        <Route path="/manage_leave" element={<ProtectedRoute allowedRoles={RoleAccess.LEAVE_MANAGEMENT}><LeaveManagement /></ProtectedRoute>} />
+        <Route path="/create_staff" element={<ProtectedRoute allowedRoles={RoleAccess.STAFF_MANAGEMENT}><CreateStaff /></ProtectedRoute>} />
+        <Route path="/staff_list" element={<ProtectedRoute allowedRoles={RoleAccess.STAFF_MANAGEMENT}><StaffManagementDetail /></ProtectedRoute>} />
+        <Route path="/create_item" element={<ProtectedRoute allowedRoles={RoleAccess.ITEM_MANAGEMENT}><CreateItem /></ProtectedRoute>} />
+        <Route path="/create_category" element={<ProtectedRoute allowedRoles={RoleAccess.ITEM_MANAGEMENT}><CreateCategory /></ProtectedRoute>} />
+        <Route path="/stock_management" element={<ProtectedRoute allowedRoles={RoleAccess.ITEM_MANAGEMENT}><ManageStock /></ProtectedRoute>} />
+        <Route path="/view_stock" element={<ProtectedRoute allowedRoles={RoleAccess.STOCK_VIEW}><ViewStock /></ProtectedRoute>} />
+        <Route path="/edit_account" element={<ProtectedRoute allowedRoles={RoleAccess.USER_EDIT}><EditUserAccount /></ProtectedRoute>} />
+        <Route path="/create_task" element={<ProtectedRoute allowedRoles={RoleAccess.TASK_MANAGEMENT}><CreateTask /></ProtectedRoute>} />
+        <Route path="/task_management" element={<ProtectedRoute allowedRoles={RoleAccess.TASK_MANAGEMENT}><TaskManagement /></ProtectedRoute>} />
+        {/* <Route path="/task_status" element={<ProtectedRoute allowedRoles={RoleAccess.TASK_MANAGEMENT}><TaskStatus /></ProtectedRoute>} /> */}
+        <Route path="/landing" element={<ProtectedRoute allowedRoles={RoleAccess.TASK_MANAGEMENT}><LandingPage /></ProtectedRoute>} />
       </Routes>
-      <SessionExpirationModal
-        show={showModal}
-        handleExtendSession={extendSession}
-        handleClose={handleClose}
-      />
+
+      <SessionExpirationModal show={showModal} handleExtendSession={extendSession} handleClose={handleClose} />
     </div>
   );
 }
 
 function AppWrapper() {
-  return (
-      <Router>
-          <App />
-      </Router>
-  );
+  return <Router><App /></Router>;
 }
 
 ReactDOM.render(<AppWrapper />, document.getElementById('root'));

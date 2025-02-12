@@ -20,6 +20,8 @@ import {
     Divider,
     Box,
     TextField,
+    MenuItem,
+    Chip,
 } from '@mui/material';
 import { Edit, Delete, Image, Visibility } from '@mui/icons-material';
 import { Autocomplete } from '@mui/material';
@@ -44,6 +46,13 @@ export default function TaskManagement() {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [editedTask, setEditedTask] = useState({}); 
     const [detailToShow, setDetailToShow] = useState({});
+
+    const taskStatusMapping = {
+        'Pending': 'รอดำเนินการ',
+        'In-progress': 'กำลังดำเนินการ',
+        'Completed': 'สำเร็จ',
+        'Failed': 'ไม่สำเร็จ',
+    }
 
     useEffect(() => {
         fetchTasks();
@@ -122,6 +131,7 @@ export default function TaskManagement() {
         const formData = new FormData();
     
         formData.append('memberid', editedTask.memberid);
+        formData.append('task_status', editedTask.task_status);
         formData.append('staff_cardid', editedTask.staff_cardid);
         formData.append('task_end_date_at', editedTask.task_end_date_at);
         formData.append('task_detail', editedTask.task_detail);
@@ -256,7 +266,21 @@ export default function TaskManagement() {
                                             )}
                                         </TableCell>
                                         <TableCell>{task.task_device_detail}</TableCell>
-                                        <TableCell>{task.task_status}</TableCell>
+                                        {/* Map status with color */}
+                                        <TableCell>
+                                            <Chip
+                                                label={taskStatusMapping[task.task_status]}
+                                                color={
+                                                    task.task_status === 'Pending'
+                                                        ? 'default'
+                                                        : task.task_status === 'In-progress'
+                                                        ? 'warning'
+                                                        : task.task_status === 'Completed'
+                                                        ? 'success'
+                                                        : 'error'
+                                                }
+                                            />
+                                        </TableCell>
                                         <TableCell>{task.task_end_date_at}</TableCell>
                                         <TableCell>
                                             <Grid container justifyContent="center" spacing={1} >
@@ -385,6 +409,23 @@ export default function TaskManagement() {
                             renderInput={(params) => <TextField {...params} label="ผู้รับผิดชอบงาน" fullWidth margin="normal" />}
                         />
 
+                        {/* สถานะ */}
+                        {/* Dropdown selection with following list Pending -> รอดำเนินการ, In-progress -> กำลังดำเนินการ, Completed -> สำเร็จ, และ สุดท้ายคือไม่สำเร็จ  */}
+                        <TextField
+                            select
+                            label="สถานะ"
+                            name="task_status"
+                            value={editedTask.task_status || ''}
+                            onChange={(e) => setEditedTask({ ...editedTask, task_status: e.target.value })}
+                            fullWidth
+                        >
+                            {Object.keys(taskStatusMapping).map((status) => (
+                                <MenuItem key={status} value={status}>
+                                    {taskStatusMapping[status]}
+                                </MenuItem>
+                            ))}
+                        </TextField>
+
                         {/* วันที่สิ้นสุด */}
                         <TextField
                             fullWidth
@@ -436,7 +477,13 @@ export default function TaskManagement() {
                             />
                         </Button>
                         {editedTask.task_pic && typeof editedTask.task_pic === 'string' && (
-                            <Typography sx={{ mt: 1 }}>รูปภาพเดิม: {editedTask.task_pic}</Typography>
+                            <Typography sx={{ mt: 1 }}>รูปภาพเดิม: 
+                                <img
+                                    src={`${editedTask.task_pic}`}
+                                    alt="Task"
+                                    style={{ maxWidth: '100%', maxHeight: '400px' }}
+                                />
+                            </Typography>
                         )}
                     </DialogContent>
                     <DialogActions>
