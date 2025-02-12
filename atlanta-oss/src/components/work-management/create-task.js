@@ -10,7 +10,8 @@ import {
     Dialog, 
     DialogTitle, 
     DialogContent, 
-    DialogActions 
+    DialogActions,
+    CircularProgress
 } from '@mui/material';
 import { Autocomplete } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
@@ -20,7 +21,7 @@ import CustomNavbar from '../navigation-bar/navbar';
 import SuccessModal from '../Modal/SuccessModal';
 import ErrorModal from '../Modal/ErrorModel';
 import config from '../../utils/config';
-import { CloudUpload } from '@mui/icons-material';
+import { Circle, CloudUpload } from '@mui/icons-material';
 
 export default function CreateTask() {
   const [members, setMembers] = useState([]);
@@ -51,6 +52,8 @@ export default function CreateTask() {
 
   const [showAddDeviceCategoryDialog, setShowAddDeviceCategoryDialog] = useState(false);
   const [newDeviceCategory, setNewDeviceCategory] = useState('');
+
+  const [loading, setLoading] = useState(false);
 
   // Fetch members and staff details
   useEffect(() => {
@@ -149,6 +152,7 @@ export default function CreateTask() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     const formattedTaskEndDate = taskEndDate 
         ? new Date(taskEndDate).toISOString()
@@ -182,9 +186,11 @@ export default function CreateTask() {
         setSuccess('เพิ่มข้อมูลงานเสร็จเรียบร้อย');
         setShowSuccessModal(true);
         resetForm(); // Clear form after successful submission
+        setLoading(false);
       } else {
         setError('ไม่สามารถเพิ่มข้อมูลงานได้');
         setShowErrorModal(true);
+        setLoading(false);
       }
     } catch (error) {
       // if return status is 400
@@ -466,8 +472,8 @@ export default function CreateTask() {
                 {taskPic && <Typography variant="body2">ไฟล์: {taskPic.name}</Typography>}
               </Grid>
             </Grid>
-            <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 3 }}>
-              เพิ่มงาน
+            <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 3 }} disabled={loading}>
+              {loading ? <CircularProgress size={24} color="inherit"/> : 'บันทึกข้อมูล'}
             </Button>
           </form>
         </Paper>
