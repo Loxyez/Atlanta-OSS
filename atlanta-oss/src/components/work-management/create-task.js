@@ -18,10 +18,8 @@ import { DatePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import CustomNavbar from '../navigation-bar/navbar';
-import SuccessModal from '../Modal/SuccessModal';
-import ErrorModal from '../Modal/ErrorModel';
 import config from '../../utils/config';
-import { Circle, CloudUpload } from '@mui/icons-material';
+import { CloudUpload } from '@mui/icons-material';
 
 export default function CreateTask() {
   const [members, setMembers] = useState([]);
