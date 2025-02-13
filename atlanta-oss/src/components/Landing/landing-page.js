@@ -66,7 +66,7 @@ export default function LandingPage() {
                                     ยื่นคำร้องขอวันลา
                                 </Typography>
                                 <Button 
-                                    onClick={() => { navigate('/request_form') }} 
+                                    onClick={() => { navigate('/request_leave') }} 
                                     variant='contained' 
                                     color="primary" 
                                     sx={{ mt: 2, width: '100%'}}
@@ -85,6 +85,7 @@ export default function LandingPage() {
                                     variant='contained' 
                                     color="primary" 
                                     sx={{ mt: 2, width: '100%'}}
+                                    disabled
                                     startIcon={<AddCircle/>}>
                                     ไปที่หน้าขอเอกสาร
                                 </Button>
@@ -98,7 +99,8 @@ export default function LandingPage() {
                                 <Button 
                                     onClick={() => { navigate('/request_form') }} 
                                     variant='contained' 
-                                    color="primary" 
+                                    color="primary"
+                                    disabled
                                     sx={{ mt: 2, width: '100%'}}
                                     startIcon={<AttachMoney/>}>
                                     ไปที่หน้าตรวจสอบสถานะเงินเดือน
@@ -115,6 +117,7 @@ export default function LandingPage() {
                                     variant='contained' 
                                     color="primary" 
                                     sx={{ mt: 2, width: '100%'}}
+                                    disabled
                                     startIcon={<CalendarMonth/>}>
                                     ไปที่หน้ายื่นเอกสารประกอบวันลา
                                 </Button>
@@ -126,7 +129,7 @@ export default function LandingPage() {
                                     จัดการงาน ทั้งหมด / เฉพาะฉัน
                                 </Typography>
                                 <Button 
-                                    onClick={() => { navigate('/create_task') }} 
+                                    onClick={() => { navigate('/task_management') }} 
                                     variant='contained' 
                                     color="primary" 
                                     sx={{ mt: 2, width: '100%'}}

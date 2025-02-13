@@ -45,6 +45,19 @@ export default function EditUserAccount() {
     const [openSuccessDialog, setOpenSuccessDialog] = useState(false);
     const [openFailDialog, setOpenFailDialog] = useState(false);
 
+    // State สำหรับจัดการ Dialog แสดงข้อผิดพลาด
+    const [errorMessage, setErrorMessage] = useState('');
+
+    // State สำหรับจัดการ Dialog เปลี่ยนรหัสผ่าน
+    const [openUpdatePassword, setOpenUpdatePassword] = useState(false);
+    const [passwordData, setPasswordData] = useState({
+        old_password: '',
+        new_password: '',
+        confirm_password: '',
+        staff_cardid: '',
+    });
+
+
     useEffect(() => {
         fetchLoggedInUserData();
         fetchStaffData(); // Fetch staff data on mount
@@ -64,6 +77,42 @@ export default function EditUserAccount() {
             } catch (error) {
                 console.error('Error decoding token', error);
             }
+        }
+    };
+
+    const handleOpenUpdatePassword = () => {
+        setOpenUpdatePassword(true);
+    };
+
+    // ฟังก์ชันที่ใช้เมื่อข้อมูลในฟอร์มถูกเปลี่ยนแปลง password
+    const handlePasswordChange = (e) => {
+        const { name, value } = e.target;
+        setPasswordData((prevData) => ({
+            ...prevData,
+            [name]: value,
+        }));
+    };
+
+    // ฟังก์ชันที่ใช้เมื่อกดปุ่มเปลี่ยนรหัสผ่าน
+    const handleUpdatePassword = async () => {
+        try {
+            passwordData.staff_cardid = formData.staff_cardid;
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            const response = await axios.put(`${config.apiBaseUrl}/users/update_password`, passwordData, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (response.status === 200) {
+                setOpenSuccessDialog(true); // เปิด dialog success
+                setOpenUpdatePassword(false); // ปิด dialog เปลี่ยนรหัสผ่าน
+            }
+        } catch (error) {
+            if (error.response.status === 400) {
+                setErrorMessage(error.response.data);
+            } else {
+                setErrorMessage('เกิดข้อผิดพลาดในการเปลี่ยนรหัสผ่าน');
+            }
+            console.log('Error updating password', errorMessage);
+            setOpenFailDialog(true); // เปิด dialog fail เมื่อเกิดข้อผิดพลาด
         }
     };
 
@@ -136,6 +185,11 @@ export default function EditUserAccount() {
                 <FormContainer elevation={3}>
                     <form onSubmit={handleSubmit}>
                         <Grid container spacing={3}>
+                            <Grid item xs={12}>
+                                <Button variant="contained" color="primary" onClick={handleOpenUpdatePassword}>
+                                    เปลี่ยนรหัสผ่าน
+                                </Button>
+                            </Grid>
                             <Grid item xs={12}>
                                 <TextField
                                     fullWidth
@@ -237,7 +291,7 @@ export default function EditUserAccount() {
                                 />
                             </Grid>
                             <Grid item xs={12}>
-                                <Button type="submit" variant="contained" color="primary">
+                                <Button type="submit" variant="contained" color="success">
                                     บันทึกการเปลี่ยนแปลง
                                 </Button>
                             </Grid>
@@ -260,14 +314,67 @@ export default function EditUserAccount() {
             </Dialog>
 
             {/* Fail Dialog */}
-            <Dialog open={openFailDialog} onClose={() => setOpenFailDialog(false)}>
+            <Dialog open={openFailDialog}  onClose={() => setOpenFailDialog(false)}>
                 <DialogTitle>การเปลี่ยนแปลงล้มเหลว</DialogTitle>
                 <DialogContent>
-                    <Typography>เกิดข้อผิดพลาดในการอัปเดตข้อมูลพนักงาน</Typography>
+                    {/* Check for message */}
+                    <Typography>{errorMessage}</Typography>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setOpenFailDialog(false)} color="primary">
                         ปิด
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Update Password */}
+            <Dialog open={openUpdatePassword} onClose={() => setOpenUpdatePassword(false)} maxWidth="sm">
+                <DialogTitle>เปลี่ยนรหัสผ่าน</DialogTitle>
+                    <DialogContent>
+                        <Grid container spacing={2}>
+                            <Grid item xs={12}>
+                                <TextField
+                                    fullWidth
+                                    label="รหัสผ่านเดิม"
+                                    name="old_password"
+                                    value={passwordData.old_password}
+                                    onChange={handlePasswordChange}
+                                    variant="outlined"
+                                    type="password"
+                                />
+                            </Grid>
+                            <Grid item xs={12}>
+                                <TextField
+                                    fullWidth
+                                    label="รหัสผ่านใหม่"
+                                    name="new_password"
+                                    value={passwordData.new_password}
+                                    onChange={handlePasswordChange}
+                                    variant="outlined"
+                                    type="password"
+                                />
+                            </Grid>
+                            <Grid item xs={12}>
+                                <TextField
+                                    fullWidth
+                                    label="ยืนยันรหัสผ่านใหม่"
+                                    name="confirm_password"
+                                    value={passwordData.confirm_password}
+                                    onChange={handlePasswordChange}
+                                    variant="outlined"
+                                    type="password"
+                                    error={passwordData.new_password !== passwordData.confirm_password}
+                                    helperText={passwordData.new_password !== passwordData.confirm_password ? 'รหัสผ่านไม่ตรงกัน' : ''}
+                                />
+                            </Grid>
+                        </Grid>
+                    </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleUpdatePassword} color="success" disabled={passwordData.new_password !== passwordData.confirm_password}>
+                        บันทึกรหัสผ่านใหม่
+                    </Button>
+                    <Button onClick={() => setOpenUpdatePassword(false)} color="error">
+                        ยกเลิก
                     </Button>
                 </DialogActions>
             </Dialog>
