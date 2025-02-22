@@ -315,7 +315,7 @@ export default function CreateTask() {
               <Grid item xs={12} sm={6}>
                 <Autocomplete
                   options={members}
-                  getOptionLabel={(option) => option.member_name}
+                  getOptionLabel={(option) => `${option.member_name} (${option.member_phone})`}
                   onChange={handleMemberChange}
                   renderInput={(params) => (
                     <TextField 

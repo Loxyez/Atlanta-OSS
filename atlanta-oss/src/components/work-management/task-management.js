@@ -23,12 +23,15 @@ import {
     MenuItem,
     Chip,
 } from '@mui/material';
-import { Edit, Delete, Image, Visibility } from '@mui/icons-material';
+import { Edit, Delete, Image, Visibility, Print } from '@mui/icons-material';
 import { Autocomplete } from '@mui/material';
 import axios from 'axios';
 import config from '../../utils/config';
 import { Container } from 'react-bootstrap';
 import CustomNavbar from '../navigation-bar/navbar';
+import RepairReceiptPdf from './PDF/RepairReceiptPdf';
+import { pdf } from '@react-pdf/renderer';
+import { saveAs } from 'file-saver';
 
 export default function TaskManagement() {
     const [tasks, setTasks] = useState([]);
@@ -59,6 +62,13 @@ export default function TaskManagement() {
         fetchMembers();
         fetchStaffDetails();
     }, []);
+
+    const handleDownloadPdf = async (data, member, staff) => {
+        member = member.find((m) => m.memberid === data.memberid);
+        staff = staff.find((s) => s.staff_cardid === data.staff_cardid);
+        const blob = await pdf(<RepairReceiptPdf data={data} member={member} staff={staff}/>).toBlob();
+        saveAs(blob, `repair-receipt-${data.taskid}.pdf`);
+    };
 
     const fetchTasks = async () => {
         const token = localStorage.getItem('token') || sessionStorage.getItem('token');
@@ -219,8 +229,8 @@ export default function TaskManagement() {
                                     <TableCell>รูปภาพ</TableCell>
                                     <TableCell>อุปกรณ์</TableCell>
                                     <TableCell>สถานะ</TableCell>
-                                    <TableCell>วันที่สิ้นสุด</TableCell>
-                                    <TableCell>จัดการ</TableCell>
+                                    <TableCell>วันที่กำหนดส่งงาน</TableCell>
+                                    <TableCell>แก้ไขข้อมูล</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -293,6 +303,18 @@ export default function TaskManagement() {
                                                         startIcon={<Edit />}
                                                     >
                                                         แก้ไข
+                                                    </Button>
+                                                </Grid>
+                                                {/* Button for print ออกใบรับซ่อม */}
+                                                <Grid item>
+                                                    <Button
+                                                        variant='contained'
+                                                        color='warning'
+                                                        size='small'
+                                                        startIcon={<Print />}
+                                                        onClick={() => handleDownloadPdf(task, members, staffDetails)}
+                                                    >
+                                                        ออกใบรับซ่อม
                                                     </Button>
                                                 </Grid>
                                                 <Grid item>

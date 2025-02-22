@@ -83,7 +83,7 @@ export default function RequestForm() {
                 tel: '',
                 role: '',
                 reason: '',
-                status: ''
+                status: 'Open'
             });
             setMessage('ระบบได้ทำการบันทึกคำร้องขอไว้เรียบร้อย และจะใช้เวลาพิจารณาภายใน 1-2 วัน');
             setShowSuccessModal(true);
