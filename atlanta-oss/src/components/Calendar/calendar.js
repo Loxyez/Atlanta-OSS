@@ -28,6 +28,7 @@ import {
 } from '@mui/material';
 import SuccessModal from '../Modal/SuccessModal';
 import ErrorModal from '../Modal/ErrorModel';
+import { set } from 'date-fns';
 
 export default function Calendar() {
   const [user, setUser] = useState(null);
@@ -230,10 +231,23 @@ export default function Calendar() {
       // If editing existing holiday
       if (editingHoliday) {
         const holidayId = editingHoliday.id.replace('holiday-', '');
+        
+        // Get the date being edited (use selectedDate if it's set, otherwise use the original date)
+        const editDate = selectedDate || startDate || editingHoliday.start;
+        const editDateObj = parseLocalDate(editDate);
+        
+        // Calculate day_name and is_weekend for the date being edited
+        const dayName = getThaiDayName(editDateObj);
+        const isEditDateWeekend = isDateWeekend(editDateObj);
+        
         const updateData = {
+          calendar_date: formatDateForAPI(editDate),
           holiday_name: holidayName,
           is_holiday: isHoliday,
-          is_weekend: isWeekend,
+          is_weekend: isWeekend || isEditDateWeekend, // Use checkbox value or auto-detected weekend
+          day_name: dayName,
+          start_date: formatDateForAPI(editDate),
+          end_date: formatDateForAPI(editDate), // Single day holiday
         };
 
         const res = await axios.put(`${config.apiBaseUrl}/calendars/${holidayId}`, updateData, {
@@ -437,12 +451,14 @@ export default function Calendar() {
       setHolidayName(selectedEvent.holidayName);
       setIsHoliday(selectedEvent.isHoliday);
       setIsWeekend(selectedEvent.isWeekend);
-      
+
       // Format the date properly for the date input
       const dateStr = selectedEvent.start instanceof Date 
         ? selectedEvent.start.toISOString().split('T')[0]
         : selectedEvent.start.split('T')[0];
-      
+
+      console.log('Date string for API:', dateStr);
+
       setStartDate(dateStr);
       setEndDate(dateStr); // For single day holidays
       setSelectedDate(dateStr); // Also set selectedDate for the form
