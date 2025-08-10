@@ -50,6 +50,9 @@ export default function Calendar() {
   const [success, setSuccess] = useState('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
+  const [editingHoliday, setEditingHoliday] = useState(null);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [holidayToDelete, setHolidayToDelete] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
@@ -210,19 +213,64 @@ export default function Calendar() {
 
   const handleCRUDClose = () => {
     setShowCRUDLeaveCalendar(false);
+    setEditingHoliday(null);
+    setHolidayName('');
+    setStartDate('');
+    setEndDate('');
+    setSelectedDate('');
+    setIsHoliday(false);
+    setIsWeekend(false);
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 
-    // Get the day name for the selected date in Thai using utility function
-    const calendarDayName = getThaiDayName(selectedDate);
-
-    // Check if it's a weekend using utility function
-    const isSelectedDateWeekend = isDateWeekend(selectedDate);
-
     try {
+      // If editing existing holiday
+      if (editingHoliday) {
+        const holidayId = editingHoliday.id.replace('holiday-', '');
+        const updateData = {
+          holiday_name: holidayName,
+          is_holiday: isHoliday,
+          is_weekend: isWeekend,
+        };
+
+        const res = await axios.put(`${config.apiBaseUrl}/calendars/${holidayId}`, updateData, {
+          headers: {Authorization: `Bearer ${token}`},
+        });
+
+        if (res.status === 200) {
+          setSuccess('แก้ไขวันหยุดเรียบร้อยแล้ว!');
+          setShowSuccessModal(true);
+          setShowCRUDLeaveCalendar(false);
+          setEditingHoliday(null);
+
+          // Reset form
+          setHolidayName('');
+          setStartDate('');
+          setEndDate('');
+          setSelectedDate('');
+          setIsHoliday(false);
+          setIsWeekend(false);
+
+          // Refresh calendar data
+          window.location.reload();
+          return;
+        } else {
+          setError('ไม่สามารถแก้ไขวันหยุดได้: ' + res.data.message);
+          setShowErrorModal(true);
+          return;
+        }
+      }
+
+      // Original logic for creating new holidays
+      // Get the day name for the selected date in Thai using utility function
+      const calendarDayName = getThaiDayName(selectedDate);
+
+      // Check if it's a weekend using utility function
+      const isSelectedDateWeekend = isDateWeekend(selectedDate);
+
       // If date range is provided, create multiple calendar entries
       if (startDate && endDate) {
         const start = parseLocalDate(startDate);
@@ -323,6 +371,7 @@ export default function Calendar() {
     if (props.eventType === 'holiday') {
       // Handle holiday event
       setSelectedEvent({
+        id: event.id, // Include the event ID for editing/deleting
         title: event.title,
         holidayName: props.holidayName,
         dayName: props.dayName,
@@ -376,6 +425,65 @@ export default function Calendar() {
 
   const handleCloseSnackbar = () => {
     setSnackbarOpen(false);
+  };
+
+  const handleEditHoliday = () => {
+    if (selectedEvent) {
+      // Store the selectedEvent with the id for editing
+      setEditingHoliday({
+        ...selectedEvent,
+        id: selectedEvent.id || `holiday-${selectedEvent.holidayId}` // Use stored ID or construct from holidayId
+      });
+      setHolidayName(selectedEvent.holidayName);
+      setIsHoliday(selectedEvent.isHoliday);
+      setIsWeekend(selectedEvent.isWeekend);
+      
+      // Format the date properly for the date input
+      const dateStr = selectedEvent.start instanceof Date 
+        ? selectedEvent.start.toISOString().split('T')[0]
+        : selectedEvent.start.split('T')[0];
+      
+      setStartDate(dateStr);
+      setEndDate(dateStr); // For single day holidays
+      setSelectedDate(dateStr); // Also set selectedDate for the form
+      setDialogOpen(false);
+      setShowCRUDLeaveCalendar(true);
+    }
+  };
+
+  const handleDeleteHoliday = () => {
+    setHolidayToDelete(selectedEvent);
+    setConfirmDeleteOpen(true);
+  };
+
+  const confirmDeleteHoliday = async () => {
+    if (!holidayToDelete) return;
+
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    try {
+      const holidayId = holidayToDelete.id.replace('holiday-', '');
+      await axios.delete(`${config.apiBaseUrl}/calendars/${holidayId}`, {
+        headers: {Authorization: `Bearer ${token}`},
+      });
+
+      setSuccess('ลบวันหยุดเรียบร้อยแล้ว');
+      setShowSuccessModal(true);
+      setConfirmDeleteOpen(false);
+      setDialogOpen(false);
+      setHolidayToDelete(null);
+
+      // Refresh calendar data
+      window.location.reload();
+    } catch (error) {
+      setError('ไม่สามารถลบวันหยุดได้ กรุณาลองใหม่อีกครั้ง');
+      setShowErrorModal(true);
+      setConfirmDeleteOpen(false);
+    }
+  };
+
+  const cancelDeleteHoliday = () => {
+    setConfirmDeleteOpen(false);
+    setHolidayToDelete(null);
   };
 
   // Thai locale configuration
@@ -720,6 +828,35 @@ export default function Calendar() {
             )}
           </DialogContent>
           <DialogActions sx={{p: 3}}>
+            {/* Edit and Delete buttons for holidays (Manager, Developer, Operator only) */}
+            {selectedEvent?.eventType === 'holiday' && user && ['Manager', 'operator', 'Developer'].includes(user.role) && (
+              <>
+                <Button
+                  onClick={handleEditHoliday}
+                  variant='contained'
+                  sx={{
+                    backgroundColor: '#2196f3',
+                    color: 'white',
+                    mr: 1,
+                    '&:hover': {backgroundColor: '#1976d2'},
+                  }}
+                >
+                  ✏️ แก้ไข
+                </Button>
+                <Button
+                  onClick={handleDeleteHoliday}
+                  variant='contained'
+                  sx={{
+                    backgroundColor: '#f44336',
+                    color: 'white',
+                    mr: 1,
+                    '&:hover': {backgroundColor: '#d32f2f'},
+                  }}
+                >
+                  🗑️ ลบ
+                </Button>
+              </>
+            )}
             <Button
               onClick={handleCloseDialog}
               variant='contained'
@@ -729,6 +866,57 @@ export default function Calendar() {
               }}
             >
               ปิด
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog
+          open={confirmDeleteOpen}
+          onClose={cancelDeleteHoliday}
+          maxWidth='sm'
+          fullWidth
+          PaperProps={{
+            sx: {
+              borderRadius: 3,
+              background: 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
+              color: 'white',
+            },
+          }}
+        >
+          <DialogTitle sx={{pb: 1, fontWeight: 'bold', fontSize: '1.5rem'}}>
+            🗑️ ยืนยันการลบวันหยุด
+          </DialogTitle>
+          <DialogContent>
+            <Typography variant='body1' sx={{mb: 2}}>
+              คุณแน่ใจหรือไม่ที่ต้องการลบวันหยุด "{holidayToDelete?.holidayName}"?
+            </Typography>
+            <Typography variant='body2' sx={{color: 'rgba(255,255,255,0.8)'}}>
+              การดำเนินการนี้ไม่สามารถยกเลิกได้
+            </Typography>
+          </DialogContent>
+          <DialogActions sx={{p: 3}}>
+            <Button
+              onClick={cancelDeleteHoliday}
+              variant='contained'
+              sx={{
+                backgroundColor: 'rgba(255,255,255,0.2)',
+                color: 'white',
+                '&:hover': {backgroundColor: 'rgba(255,255,255,0.3)'},
+              }}
+            >
+              ยกเลิก
+            </Button>
+            <Button
+              onClick={confirmDeleteHoliday}
+              variant='contained'
+              sx={{
+                backgroundColor: '#d32f2f',
+                color: 'white',
+                '&:hover': {backgroundColor: '#b71c1c'},
+              }}
+            >
+              ลบ
             </Button>
           </DialogActions>
         </Dialog>
@@ -754,7 +942,7 @@ export default function Calendar() {
             fontWeight: 'bold',
           }}
         >
-          🗓️ จัดการวันหยุด / เพิ่มวันหยุด
+          {editingHoliday ? '✏️ แก้ไขวันหยุด' : '🗓️ จัดการวันหยุด / เพิ่มวันหยุด'}
         </DialogTitle>
         <DialogContent sx={{mt: 2}}>
           <Typography variant='body1' sx={{mb: 3}}>
