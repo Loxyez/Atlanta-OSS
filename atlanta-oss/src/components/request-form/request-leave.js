@@ -21,6 +21,7 @@ import SuccessModal from '../Modal/SuccessModal';
 import ErrorModal from '../Modal/ErrorModel';
 import {jwtDecode} from 'jwt-decode';
 import config from '../../utils/config';
+import {formatDateForAPI} from '../../utils/dateUtils';
 
 export default function LeaveRequest() {
   const [leaveTypes, setLeaveTypes] = useState([]);
@@ -83,12 +84,14 @@ export default function LeaveRequest() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+
+    // Format dates properly to avoid timezone issues
     const leaveRequest = {
       staff_cardid: user.staff_cardid,
       leave_type_id: selectedLeave,
       leave_period: leavePeriod,
-      start_date: startDate,
-      end_date: endDate,
+      start_date: formatDateForAPI(startDate),
+      end_date: formatDateForAPI(endDate),
       reason,
     };
 

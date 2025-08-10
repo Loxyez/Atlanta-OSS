@@ -3,6 +3,7 @@ import axios from 'axios';
 import CustomNavbar from '../navigation-bar/navbar';
 import {jwtDecode} from 'jwt-decode';
 import config from '../../utils/config';
+import {parseLocalDate, formatDateForAPI, getThaiDayName, isWeekend as isDateWeekend} from '../../utils/dateUtils';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -21,7 +22,12 @@ import {
   DialogActions,
   Snackbar,
   Alert,
+  TextField,
+  FormControlLabel,
+  Checkbox,
 } from '@mui/material';
+import SuccessModal from '../Modal/SuccessModal';
+import ErrorModal from '../Modal/ErrorModel';
 
 export default function Calendar() {
   const [user, setUser] = useState(null);
@@ -31,6 +37,19 @@ export default function Calendar() {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [showCRUDLeaveCalendar, setShowCRUDLeaveCalendar] = useState(false);
+  const [holidayDetails, setHolidayDetails] = useState([]);
+
+  const [isWeekend, setIsWeekend] = useState(false);
+  const [isHoliday, setIsHoliday] = useState(false);
+  const [holidayName, setHolidayName] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
@@ -68,23 +87,26 @@ export default function Calendar() {
 
                 // For multi-day leave, create an event for each day
                 const eventsForRequest = [];
-                const startDate = new Date(req.start_date);
-                const endDate = new Date(req.end_date);
+
+                // Use timezone-safe date parsing for display
+                const startDateStr = req.start_date.split('T')[0]; // Get YYYY-MM-DD part only
+                const endDateStr = req.end_date.split('T')[0]; // Get YYYY-MM-DD part only
 
                 // Calculate the end date for FullCalendar (needs to be the day after for multi-day events)
-                const calendarEndDate = new Date(endDate);
-                calendarEndDate.setDate(calendarEndDate.getDate() + 1);
+                const endDateParts = endDateStr.split('-');
+                const calendarEndDate = new Date(endDateParts[0], endDateParts[1] - 1, parseInt(endDateParts[2]) + 1);
+                const calendarEndDateStr = `${calendarEndDate.getFullYear()}-${String(calendarEndDate.getMonth() + 1).padStart(2, '0')}-${String(calendarEndDate.getDate()).padStart(2, '0')}`;
 
                 // Determine if this is a multi-day event or single day
-                const isMultiDay = startDate.toDateString() !== endDate.toDateString();
+                const isMultiDay = startDateStr !== endDateStr;
 
-                if (isMultiDay || req.leave_period === 'full-day') {
+                if (isMultiDay || req.leave_period === 'full-day' || req.leave_period === 'full') {
                   // Create a single all-day event for multi-day or full-day leave
                   eventsForRequest.push({
                     id: `leave-${req.request_id}`,
                     title: `${req.staff_details?.staff_name || req.staff_cardid} - ${req.leave_types?.leave_name || 'Leave'}`,
-                    start: startDate.toISOString().slice(0, 10),
-                    end: calendarEndDate.toISOString().slice(0, 10),
+                    start: startDateStr,
+                    end: calendarEndDateStr,
                     allDay: true,
                     backgroundColor: color,
                     borderColor: color,
@@ -95,6 +117,7 @@ export default function Calendar() {
                       status: req.status,
                       leavePeriod: req.leave_period,
                       requestId: req.request_id,
+                      eventType: 'leave',
                     },
                   });
                 } else {
@@ -116,8 +139,8 @@ export default function Calendar() {
                   eventsForRequest.push({
                     id: `leave-${req.request_id}`,
                     title: `${req.staff_details?.staff_name || req.staff_cardid} - ${req.leave_types?.leave_name || 'Leave'}`,
-                    start: `${startDate.toISOString().slice(0, 10)}T${startTime}`,
-                    end: `${startDate.toISOString().slice(0, 10)}T${endTime}`,
+                    start: `${startDateStr}T${startTime}`,
+                    end: `${startDateStr}T${endTime}`,
                     allDay: false,
                     backgroundColor: color,
                     borderColor: color,
@@ -128,6 +151,7 @@ export default function Calendar() {
                       status: req.status,
                       leavePeriod: req.leave_period,
                       requestId: req.request_id,
+                      eventType: 'leave',
                     },
                   });
                 }
@@ -144,25 +168,187 @@ export default function Calendar() {
       }
     };
 
+    const fetchHolidays = async () => {
+      try {
+        const res = await axios.get(`${config.apiBaseUrl}/calendars`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (res.data) {
+          const holidayEvents = res.data.map((holiday) => ({
+            id: `holiday-${holiday.id}`,
+            title: ` ${holiday.holiday_name}`,
+            start: holiday.calendar_date.split('T')[0], // Use only the date part to avoid timezone issues
+            allDay: true,
+            backgroundColor: '#9c27b0',
+            borderColor: '#7b1fa2',
+            textColor: '#ffffff',
+            extendedProps: {
+              holidayName: holiday.holiday_name,
+              isHoliday: holiday.is_holiday,
+              isWeekend: holiday.is_weekend,
+              dayName: holiday.day_name,
+              eventType: 'holiday',
+            },
+          }));
+
+          // Merge holidays with leave events
+          setEventDetails((prevEvents) => {
+            const leaveEvents = prevEvents?.filter((event) => event.extendedProps?.eventType === 'leave') || [];
+            return [...leaveEvents, ...holidayEvents];
+          });
+        }
+      } catch (err) {
+        console.error('Error fetching holidays:', err);
+      }
+    };
+
     fetchLeaveRequests();
+    fetchHolidays();
   }, []);
+
+  const handleCRUDClose = () => {
+    setShowCRUDLeaveCalendar(false);
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+
+    // Get the day name for the selected date in Thai using utility function
+    const calendarDayName = getThaiDayName(selectedDate);
+
+    // Check if it's a weekend using utility function
+    const isSelectedDateWeekend = isDateWeekend(selectedDate);
+
+    try {
+      // If date range is provided, create multiple calendar entries
+      if (startDate && endDate) {
+        const start = parseLocalDate(startDate);
+        const end = parseLocalDate(endDate);
+        const requests = [];
+
+        // Generate all dates in the range
+        for (let date = new Date(start); date <= end; date.setDate(date.getDate() + 1)) {
+          const currentDate = new Date(date);
+          const currentDayName = getThaiDayName(currentDate);
+          const isCurrentDateWeekend = isDateWeekend(currentDate);
+
+          const holidayRequest = {
+            calendar_date: formatDateForAPI(currentDate),
+            day_name: currentDayName,
+            is_weekend: isCurrentDateWeekend,
+            is_holiday: isHoliday,
+            holiday_name: holidayName,
+            start_date: formatDateForAPI(startDate),
+            end_date: formatDateForAPI(endDate),
+            created_by: user?.staff_cardid || user?.name,
+          };
+
+          requests.push(
+            axios.post(`${config.apiBaseUrl}/calendars`, holidayRequest, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            })
+          );
+        }
+
+        // Execute all requests
+        await Promise.all(requests);
+        setSuccess(`เพิ่มวันหยุดในช่วง ${startDate} ถึง ${endDate} เรียบร้อยแล้ว!`);
+      } else if (selectedDate) {
+        // Single date entry
+        const holidayRequest = {
+          calendar_date: formatDateForAPI(selectedDate),
+          day_name: calendarDayName,
+          is_weekend: isSelectedDateWeekend,
+          is_holiday: isHoliday,
+          holiday_name: holidayName,
+          start_date: formatDateForAPI(selectedDate),
+          end_date: formatDateForAPI(selectedDate),
+          created_by: user?.staff_cardid || user?.name,
+        };
+
+        const res = await axios.post(`${config.apiBaseUrl}/calendars`, holidayRequest, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (res.status === 201) {
+          setSuccess('เพิ่มวันหยุดเรียบร้อยแล้ว!');
+        } else {
+          setError('ไม่สามารถเพิ่มวันหยุดได้: ' + res.data.message);
+          setShowErrorModal(true);
+          return;
+        }
+      } else {
+        setError('กรุณาเลือกวันที่หรือช่วงวันที่');
+        setShowErrorModal(true);
+        return;
+      }
+
+      setShowSuccessModal(true);
+      setShowCRUDLeaveCalendar(false);
+
+      // Reset form
+      setHolidayName('');
+      setStartDate('');
+      setEndDate('');
+      setSelectedDate('');
+      setIsHoliday(false);
+      setIsWeekend(false);
+    } catch (error) {
+      console.error('Error creating holiday request:', error);
+      setError('Error creating holiday request: ' + (error.response?.data?.message || error.message));
+      setShowErrorModal(true);
+    }
+  };
+
+  const handleCloseSuccessModal = () => {
+    setShowSuccessModal(false);
+  };
+
+  const handleCloseErrorModal = () => {
+    setShowErrorModal(false);
+  };
 
   // FullCalendar event handlers
   const handleEventClick = (clickInfo) => {
     const event = clickInfo.event;
     const props = event.extendedProps;
 
-    setSelectedEvent({
-      title: event.title,
-      staffName: props.staffName,
-      leaveType: props.leaveType,
-      status: props.status,
-      period: props.leavePeriod,
-      reason: props.reason || 'ไม่ได้ระบุเหตุผล',
-      start: event.start,
-      end: event.end,
-      allDay: event.allDay,
-    });
+    if (props.eventType === 'holiday') {
+      // Handle holiday event
+      setSelectedEvent({
+        title: event.title,
+        holidayName: props.holidayName,
+        dayName: props.dayName,
+        isHoliday: props.isHoliday,
+        isWeekend: props.isWeekend,
+        start: event.start,
+        end: event.end,
+        allDay: event.allDay,
+        eventType: 'holiday',
+      });
+    } else {
+      // Handle leave event
+      setSelectedEvent({
+        title: event.title,
+        staffName: props.staffName,
+        leaveType: props.leaveType,
+        status: props.status,
+        period: props.leavePeriod,
+        reason: props.reason || 'ไม่ได้ระบุเหตุผล',
+        start: event.start,
+        end: event.end,
+        allDay: event.allDay,
+        eventType: 'leave',
+      });
+    }
+
     setDialogOpen(true);
   };
 
@@ -277,7 +463,7 @@ export default function Calendar() {
               📅 ปฏิทินวันลา / วันหยุด
             </Typography>
 
-            <Box sx={{display: 'flex', gap: 1}}>
+            <Box sx={{display: 'flex', gap: 1, flexWrap: 'wrap'}}>
               <Chip
                 icon={<span>🟢</span>}
                 label='อนุมัติ'
@@ -296,6 +482,12 @@ export default function Calendar() {
                 variant='outlined'
                 sx={{color: '#f44336', borderColor: '#f44336'}}
               />
+              <Chip
+                icon={<span>🎉</span>}
+                label='วันหยุดราชการ'
+                variant='outlined'
+                sx={{color: '#9c27b0', borderColor: '#9c27b0'}}
+              />
             </Box>
           </Box>
 
@@ -311,8 +503,8 @@ export default function Calendar() {
                   boxShadow: '0 6px 12px rgba(0,0,0,0.15)',
                   transform: 'translateY(-1px)',
                 },
-                // Make
               }}
+              onClick={() => setShowCRUDLeaveCalendar(true)}
             >
               ➕ เพิ่ม / แก้ไข วันหยุด
             </Button>
@@ -396,7 +588,9 @@ export default function Calendar() {
             },
           }}
         >
-          <DialogTitle sx={{pb: 1, fontWeight: 'bold', fontSize: '1.5rem'}}>📋 รายละเอียดการลา</DialogTitle>
+          <DialogTitle sx={{pb: 1, fontWeight: 'bold', fontSize: '1.5rem'}}>
+            {selectedEvent?.eventType === 'holiday' ? '🎉 รายละเอียดวันหยุด' : '📋 รายละเอียดการลา'}
+          </DialogTitle>
           <DialogContent>
             {selectedEvent && (
               <Box sx={{pt: 1}}>
@@ -405,64 +599,122 @@ export default function Calendar() {
                 </Typography>
 
                 <Box sx={{display: 'grid', gap: 1.5}}>
-                  <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
-                    <span>👤</span>
-                    <Typography>
-                      <strong>ชื่อพนักงาน:</strong> {selectedEvent.staffName}
-                    </Typography>
-                  </Box>
+                  {selectedEvent.eventType === 'holiday' ? (
+                    // Holiday event details
+                    <>
+                      <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                        <span>🎊</span>
+                        <Typography>
+                          <strong>ชื่อวันหยุด:</strong> {selectedEvent.holidayName}
+                        </Typography>
+                      </Box>
 
-                  <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
-                    <span>📝</span>
-                    <Typography>
-                      <strong>ประเภทการลา:</strong> {selectedEvent.leaveType}
-                    </Typography>
-                  </Box>
+                      <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                        <span>📅</span>
+                        <Typography>
+                          <strong>วันที่:</strong> {new Date(selectedEvent.start).toLocaleDateString('th-TH')}
+                        </Typography>
+                      </Box>
 
-                  <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
-                    <span>📊</span>
-                    <Typography>
-                      <strong>สถานะ:</strong>
-                      <Chip
-                        label={selectedEvent.status}
-                        size='small'
-                        sx={{
-                          ml: 1,
-                          backgroundColor:
-                            selectedEvent.status === 'Approved'
-                              ? '#4caf50'
-                              : selectedEvent.status === 'Denied'
-                                ? '#f44336'
-                                : '#ff9800',
-                          color: 'white',
-                        }}
-                      />
-                    </Typography>
-                  </Box>
+                      <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                        <span>📝</span>
+                        <Typography>
+                          <strong>วัน:</strong> {selectedEvent.dayName}
+                        </Typography>
+                      </Box>
 
-                  <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
-                    <span>⏰</span>
-                    <Typography>
-                      <strong>ช่วงเวลา:</strong> {selectedEvent.period}
-                    </Typography>
-                  </Box>
+                      <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                        <span>🏷️</span>
+                        <Typography>
+                          <strong>ประเภท:</strong>
+                          {selectedEvent.isHoliday && (
+                            <Chip
+                              label='วันหยุดราชการ'
+                              size='small'
+                              sx={{
+                                ml: 1,
+                                backgroundColor: '#9c27b0',
+                                color: 'white',
+                              }}
+                            />
+                          )}
+                          {selectedEvent.isWeekend && (
+                            <Chip
+                              label='วันหยุดสุดสัปดาห์'
+                              size='small'
+                              sx={{
+                                ml: 1,
+                                backgroundColor: '#ff5722',
+                                color: 'white',
+                              }}
+                            />
+                          )}
+                        </Typography>
+                      </Box>
+                    </>
+                  ) : (
+                    // Leave event details
+                    <>
+                      <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                        <span>👤</span>
+                        <Typography>
+                          <strong>ชื่อพนักงาน:</strong> {selectedEvent.staffName}
+                        </Typography>
+                      </Box>
 
-                  <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
-                    <span>📅</span>
-                    <Typography>
-                      <strong>วันที่:</strong>{' '}
-                      {selectedEvent.allDay
-                        ? `${new Date(selectedEvent.start).toLocaleDateString('th-TH')} - ${new Date(selectedEvent.end).toLocaleDateString('th-TH')}`
-                        : new Date(selectedEvent.start).toLocaleDateString('th-TH')}
-                    </Typography>
-                  </Box>
+                      <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                        <span>📝</span>
+                        <Typography>
+                          <strong>ประเภทการลา:</strong> {selectedEvent.leaveType}
+                        </Typography>
+                      </Box>
 
-                  <Box sx={{display: 'flex', alignItems: 'flex-start', gap: 1}}>
-                    <span>💬</span>
-                    <Typography>
-                      <strong>เหตุผล:</strong> {selectedEvent.reason}
-                    </Typography>
-                  </Box>
+                      <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                        <span>📊</span>
+                        <Typography>
+                          <strong>สถานะ:</strong>
+                          <Chip
+                            label={selectedEvent.status}
+                            size='small'
+                            sx={{
+                              ml: 1,
+                              backgroundColor:
+                                selectedEvent.status === 'Approved'
+                                  ? '#4caf50'
+                                  : selectedEvent.status === 'Denied'
+                                    ? '#f44336'
+                                    : '#ff9800',
+                              color: 'white',
+                            }}
+                          />
+                        </Typography>
+                      </Box>
+
+                      <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                        <span>⏰</span>
+                        <Typography>
+                          <strong>ช่วงเวลา:</strong> {selectedEvent.period}
+                        </Typography>
+                      </Box>
+
+                      <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                        <span>📅</span>
+                        <Typography>
+                          <strong>วันที่:</strong>{' '}
+                          {selectedEvent.allDay
+                            ? `${new Date(selectedEvent.start).toLocaleDateString('th-TH')} - ${new Date(selectedEvent.end).toLocaleDateString('th-TH')}`
+                            : new Date(selectedEvent.start).toLocaleDateString('th-TH')}
+                        </Typography>
+                      </Box>
+
+                      <Box sx={{display: 'flex', alignItems: 'flex-start', gap: 1}}>
+                        <span>💬</span>
+                        <Typography>
+                          <strong>เหตุผล:</strong> {selectedEvent.reason}
+                        </Typography>
+                      </Box>
+                    </>
+                  )}
                 </Box>
               </Box>
             )}
@@ -493,6 +745,221 @@ export default function Calendar() {
           </Alert>
         </Snackbar>
       </Container>
+
+      <Dialog open={showCRUDLeaveCalendar} onClose={handleCRUDClose} maxWidth='md' fullWidth>
+        <DialogTitle
+          sx={{
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            color: 'white',
+            fontWeight: 'bold',
+          }}
+        >
+          🗓️ จัดการวันหยุด / เพิ่มวันหยุด
+        </DialogTitle>
+        <DialogContent sx={{mt: 2}}>
+          <Typography variant='body1' sx={{mb: 3}}>
+            คุณสามารถ:
+            <ul>
+              <li>เพิ่มวันหยุดวันเดียว (เลือกวันที่เดียว)</li>
+              <li>เพิ่มวันหยุดช่วงวันที่ (เลือกวันเริ่มต้นและสิ้นสุด)</li>
+              <li>ระบุชื่อวันหยุดและประเภท</li>
+            </ul>
+          </Typography>
+
+          <Box component='form' onSubmit={handleSubmit} sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
+            {/* Holiday Name */}
+            <TextField
+              label='🏷️ ชื่อวันหยุด'
+              value={holidayName}
+              onChange={(e) => setHolidayName(e.target.value)}
+              fullWidth
+              required
+              variant='outlined'
+              placeholder='เช่น วันปีใหม่, วันสงกรานต์'
+              helperText='ระบุชื่อวันหยุดที่ต้องการเพิ่ม'
+            />
+
+            {/* Date Selection Section */}
+            <Box
+              sx={{
+                p: 2,
+                border: '1px solid #e0e0e0',
+                borderRadius: 2,
+                backgroundColor: '#f8f9fa',
+              }}
+            >
+              <Typography variant='h6' sx={{mb: 2, color: '#1976d2'}}>
+                📅 เลือกวันที่
+              </Typography>
+
+              <Typography variant='body2' sx={{mb: 2, color: '#666'}}>
+                เลือกวิธีการกำหนดวันหยุด:
+              </Typography>
+
+              {/* Single Date */}
+              <Box sx={{mb: 2}}>
+                <Typography variant='subtitle2' sx={{mb: 1, fontWeight: 'bold'}}>
+                  📍 วันหยุดวันเดียว
+                </Typography>
+                <TextField
+                  label='วันที่'
+                  type='date'
+                  value={selectedDate}
+                  onChange={(e) => {
+                    setSelectedDate(e.target.value);
+                    // Clear date range when single date is selected
+                    if (e.target.value) {
+                      setStartDate('');
+                      setEndDate('');
+                    }
+                  }}
+                  fullWidth
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  helperText='เลือกวันที่เดียวสำหรับวันหยุด'
+                />
+              </Box>
+
+              <Typography variant='body2' sx={{textAlign: 'center', my: 1, color: '#999'}}>
+                หรือ
+              </Typography>
+
+              {/* Date Range */}
+              <Box>
+                <Typography variant='subtitle2' sx={{mb: 1, fontWeight: 'bold'}}>
+                  📊 วันหยุดช่วงวันที่
+                </Typography>
+                <Box sx={{display: 'flex', gap: 2, flexDirection: {xs: 'column', sm: 'row'}}}>
+                  <TextField
+                    label='📅 วันที่เริ่มต้น'
+                    type='date'
+                    value={startDate}
+                    onChange={(e) => {
+                      setStartDate(e.target.value);
+                      // Clear single date when range is selected
+                      if (e.target.value) {
+                        setSelectedDate('');
+                      }
+                    }}
+                    fullWidth
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                    helperText='วันแรกของช่วงวันหยุด'
+                  />
+                  <TextField
+                    label='📅 วันที่สิ้นสุด'
+                    type='date'
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    fullWidth
+                    inputProps={{
+                      min: startDate, // Prevent end date before start date
+                    }}
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                    helperText='วันสุดท้ายของช่วงวันหยุด'
+                    disabled={!startDate}
+                  />
+                </Box>
+              </Box>
+            </Box>
+
+            {/* Holiday Options */}
+            <Box
+              sx={{
+                p: 2,
+                border: '1px solid #e0e0e0',
+                borderRadius: 2,
+                backgroundColor: '#f8f9fa',
+              }}
+            >
+              <Typography variant='h6' sx={{mb: 2, color: '#1976d2'}}>
+                ⚙️ ตัวเลือกวันหยุด
+              </Typography>
+
+              <FormControlLabel
+                control={
+                  <Checkbox checked={isHoliday} onChange={(e) => setIsHoliday(e.target.checked)} color='primary' />
+                }
+                label='🎉 เป็นวันหยุดราชการ/บริษัท'
+              />
+
+              <FormControlLabel
+                control={
+                  <Checkbox checked={isWeekend} onChange={(e) => setIsWeekend(e.target.checked)} color='secondary' />
+                }
+                label='🏖️ เป็นวันหยุดสุดสัปดาห์'
+              />
+            </Box>
+
+            {/* Preview Section */}
+            {(selectedDate || (startDate && endDate)) && (
+              <Box
+                sx={{
+                  p: 2,
+                  backgroundColor: '#e3f2fd',
+                  borderRadius: 2,
+                  border: '1px solid #2196f3',
+                }}
+              >
+                <Typography variant='h6' sx={{mb: 1, color: '#1976d2'}}>
+                  👁️ ตัวอย่าง
+                </Typography>
+                <Typography variant='body2'>
+                  <strong>ชื่อวันหยุด:</strong> {holidayName || 'ยังไม่ได้ระบุ'}
+                </Typography>
+                <Typography variant='body2'>
+                  <strong>วันที่:</strong>{' '}
+                  {selectedDate
+                    ? new Date(selectedDate).toLocaleDateString('th-TH')
+                    : startDate && endDate
+                      ? `${new Date(startDate).toLocaleDateString('th-TH')} - ${new Date(endDate).toLocaleDateString('th-TH')}`
+                      : 'ยังไม่ได้เลือก'}
+                </Typography>
+                <Typography variant='body2'>
+                  <strong>ประเภท:</strong> {isHoliday ? '🎉 วันหยุดราชการ' : ''}{' '}
+                  {isWeekend ? '🏖️ วันหยุดสุดสัปดาห์' : ''} {!isHoliday && !isWeekend ? '📅 วันทำการปกติ' : ''}
+                </Typography>
+              </Box>
+            )}
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{p: 3, gap: 1}}>
+          <Button
+            type='submit'
+            variant='contained'
+            color='primary'
+            onClick={handleSubmit}
+            disabled={!holidayName || (!selectedDate && !(startDate && endDate))}
+            sx={{
+              borderRadius: 2,
+              px: 3,
+              '&:hover': {
+                transform: 'translateY(-1px)',
+              },
+            }}
+          >
+            💾 บันทึกวันหยุด
+          </Button>
+          <Button
+            onClick={handleCRUDClose}
+            variant='outlined'
+            color='primary'
+            sx={{
+              borderRadius: 2,
+              px: 3,
+            }}
+          >
+            ❌ ยกเลิก
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <SuccessModal show={showSuccessModal} handleClose={handleCloseSuccessModal} message={success} />
+      <ErrorModal show={showErrorModal} handleClose={handleCloseErrorModal} message={error} />
     </div>
   );
 }
