@@ -6,6 +6,92 @@
   padding: 20px 0;
 }
 
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+  .calendar-container {
+    padding: 10px 0;
+  }
+
+  .fc-toolbar {
+    flex-direction: column !important;
+    gap: 8px !important;
+    padding: 8px !important;
+  }
+
+  .fc-toolbar-chunk {
+    display: flex !important;
+    justify-content: center !important;
+    margin: 0 !important;
+  }
+
+  .fc-button-group {
+    margin: 0 !important;
+  }
+
+  .fc-button {
+    padding: 6px 10px !important;
+    font-size: 0.75rem !important;
+    margin: 0 2px !important;
+  }
+
+  .fc-toolbar-title {
+    font-size: 1.2rem !important;
+    text-align: center !important;
+    margin: 8px 0 !important;
+  }
+
+  .fc-daygrid-day-number {
+    font-size: 0.875rem !important;
+    padding: 2px !important;
+  }
+
+  .fc-event {
+    font-size: 0.75rem !important;
+    padding: 2px 4px !important;
+    margin: 1px 0 !important;
+  }
+
+  .fc-daygrid-event {
+    margin-top: 1px !important;
+    margin-bottom: 1px !important;
+  }
+
+  .fc-day-header {
+    padding: 8px 2px !important;
+    font-size: 0.75rem !important;
+  }
+
+  .fc-col-header-cell {
+    padding: 4px 2px !important;
+  }
+
+  .fc-daygrid-day {
+    min-height: 60px !important;
+  }
+
+  /* Touch-friendly event hovering */
+  .fc-event:active {
+    transform: scale(0.95) !important;
+  }
+}
+
+/* Tablet Styles */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .fc-toolbar-title {
+    font-size: 1.5rem !important;
+  }
+
+  .fc-button {
+    padding: 8px 12px !important;
+    font-size: 0.875rem !important;
+  }
+
+  .fc-event {
+    font-size: 0.875rem !important;
+    padding: 3px 6px !important;
+  }
+}
+
 .fc-day-today-custom {
   background-color: rgba(25, 118, 210, 0.1) !important;
   border: 2px solid #1976d2 !important;
