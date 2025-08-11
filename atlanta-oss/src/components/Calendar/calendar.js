@@ -28,7 +28,7 @@ import {
 } from '@mui/material';
 import SuccessModal from '../Modal/SuccessModal';
 import ErrorModal from '../Modal/ErrorModel';
-import { set } from 'date-fns';
+import {set} from 'date-fns';
 
 export default function Calendar() {
   const [user, setUser] = useState(null);
@@ -54,6 +54,22 @@ export default function Calendar() {
   const [editingHoliday, setEditingHoliday] = useState(null);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [holidayToDelete, setHolidayToDelete] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    // Set initial value
+    handleResize();
+
+    // Add event listener
+    window.addEventListener('resize', handleResize);
+
+    // Cleanup
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
@@ -231,15 +247,15 @@ export default function Calendar() {
       // If editing existing holiday
       if (editingHoliday) {
         const holidayId = editingHoliday.id.replace('holiday-', '');
-        
+
         // Get the date being edited (use selectedDate if it's set, otherwise use the original date)
         const editDate = selectedDate || startDate || editingHoliday.start;
         const editDateObj = parseLocalDate(editDate);
-        
+
         // Calculate day_name and is_weekend for the date being edited
         const dayName = getThaiDayName(editDateObj);
         const isEditDateWeekend = isDateWeekend(editDateObj);
-        
+
         const updateData = {
           calendar_date: formatDateForAPI(editDate),
           holiday_name: holidayName,
@@ -446,16 +462,17 @@ export default function Calendar() {
       // Store the selectedEvent with the id for editing
       setEditingHoliday({
         ...selectedEvent,
-        id: selectedEvent.id || `holiday-${selectedEvent.holidayId}` // Use stored ID or construct from holidayId
+        id: selectedEvent.id || `holiday-${selectedEvent.holidayId}`, // Use stored ID or construct from holidayId
       });
       setHolidayName(selectedEvent.holidayName);
       setIsHoliday(selectedEvent.isHoliday);
       setIsWeekend(selectedEvent.isWeekend);
 
       // Format the date properly for the date input
-      const dateStr = selectedEvent.start instanceof Date 
-        ? selectedEvent.start.toISOString().split('T')[0]
-        : selectedEvent.start.split('T')[0];
+      const dateStr =
+        selectedEvent.start instanceof Date
+          ? selectedEvent.start.toISOString().split('T')[0]
+          : selectedEvent.start.split('T')[0];
 
       console.log('Date string for API:', dateStr);
 
@@ -558,11 +575,18 @@ export default function Calendar() {
   return (
     <div>
       <CustomNavbar />
-      <Container maxWidth='lg' sx={{mt: 4, mb: 4}}>
+      <Container
+        maxWidth='lg'
+        sx={{
+          mt: {xs: 2, sm: 3, md: 4},
+          mb: {xs: 2, sm: 3, md: 4},
+          px: {xs: 1, sm: 2},
+        }}
+      >
         <Paper
           elevation={3}
           sx={{
-            padding: 4,
+            padding: {xs: 2, sm: 3, md: 4},
             background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
             borderRadius: 3,
           }}
@@ -570,9 +594,11 @@ export default function Calendar() {
           <Box
             sx={{
               display: 'flex',
+              flexDirection: {xs: 'column', md: 'row'},
               justifyContent: 'space-between',
-              alignItems: 'center',
+              alignItems: {xs: 'stretch', md: 'center'},
               mb: 3,
+              gap: {xs: 2, md: 0},
             }}
           >
             <Typography
@@ -582,35 +608,65 @@ export default function Calendar() {
                 fontWeight: 'bold',
                 color: '#2c3e50',
                 textShadow: '2px 2px 4px rgba(0,0,0,0.1)',
+                fontSize: {xs: '1.5rem', sm: '2rem', md: '2.125rem'},
+                textAlign: {xs: 'center', md: 'left'},
+                mb: {xs: 1, md: 1},
               }}
             >
               📅 ปฏิทินวันลา / วันหยุด
             </Typography>
 
-            <Box sx={{display: 'flex', gap: 1, flexWrap: 'wrap'}}>
+            <Box
+              sx={{
+                display: 'flex',
+                gap: {xs: 0.5, sm: 1},
+                flexWrap: 'wrap',
+                justifyContent: {xs: 'center', md: 'flex-end'},
+              }}
+            >
               <Chip
                 icon={<span>🟢</span>}
                 label='อนุมัติ'
                 variant='outlined'
-                sx={{color: '#4caf50', borderColor: '#4caf50'}}
+                size={isMobile ? 'small' : 'medium'}
+                sx={{
+                  color: '#4caf50',
+                  borderColor: '#4caf50',
+                  fontSize: {xs: '0.75rem', sm: '0.875rem'},
+                }}
               />
               <Chip
                 icon={<span>🟠</span>}
                 label='รอดำเนินการ'
                 variant='outlined'
-                sx={{color: '#ff9800', borderColor: '#ff9800'}}
+                size={isMobile ? 'small' : 'medium'}
+                sx={{
+                  color: '#ff9800',
+                  borderColor: '#ff9800',
+                  fontSize: {xs: '0.75rem', sm: '0.875rem'},
+                }}
               />
               <Chip
                 icon={<span>🔴</span>}
                 label='ไม่อนุมัติ'
                 variant='outlined'
-                sx={{color: '#f44336', borderColor: '#f44336'}}
+                size={isMobile ? 'small' : 'medium'}
+                sx={{
+                  color: '#f44336',
+                  borderColor: '#f44336',
+                  fontSize: {xs: '0.75rem', sm: '0.875rem'},
+                }}
               />
               <Chip
                 icon={<span>🎉</span>}
                 label='วันหยุดราชการ'
                 variant='outlined'
-                sx={{color: '#9c27b0', borderColor: '#9c27b0'}}
+                size={isMobile ? 'small' : 'medium'}
+                sx={{
+                  color: '#9c27b0',
+                  borderColor: '#9c27b0',
+                  fontSize: {xs: '0.75rem', sm: '0.875rem'},
+                }}
               />
             </Box>
           </Box>
@@ -623,6 +679,9 @@ export default function Calendar() {
                 mb: 3,
                 borderRadius: 2,
                 boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+                fontSize: {xs: '0.875rem', sm: '1rem'},
+                padding: {xs: '8px 16px', sm: '10px 22px'},
+                width: {xs: '100%', sm: 'auto'},
                 '&:hover': {
                   boxShadow: '0 6px 12px rgba(0,0,0,0.15)',
                   transform: 'translateY(-1px)',
@@ -637,21 +696,22 @@ export default function Calendar() {
           <Paper
             elevation={2}
             sx={{
-              p: 2,
+              p: {xs: 1, sm: 2},
               borderRadius: 2,
               backgroundColor: 'rgba(255,255,255,0.95)',
               backdropFilter: 'blur(10px)',
+              overflow: 'hidden', // Prevent horizontal scroll
             }}
             className='calendar-glow'
           >
             <FullCalendar
               plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-              initialView='dayGridMonth'
+              initialView={isMobile ? 'dayGridMonth' : 'dayGridMonth'}
               locale={thaiLocale}
               headerToolbar={{
-                left: 'prev,next today',
+                left: isMobile ? 'prev,next' : 'prev,next today',
                 center: 'title',
-                right: 'dayGridMonth,timeGridWeek,timeGridDay',
+                right: isMobile ? '' : 'dayGridMonth,timeGridWeek,timeGridDay',
               }}
               events={eventDetails}
               eventClick={handleEventClick}
@@ -659,17 +719,19 @@ export default function Calendar() {
               selectable={true}
               selectMirror={true}
               height='auto'
+              contentHeight={isMobile ? 400 : 'auto'}
               firstDay={1}
               eventDisplay='block'
-              dayMaxEvents={3}
+              dayMaxEvents={isMobile ? 2 : 3}
               moreLinkClick='popover'
               eventTimeFormat={{
                 hour: '2-digit',
                 minute: '2-digit',
                 hour12: false,
               }}
-              dayHeaderFormat={{weekday: 'short'}}
-              titleFormat={{year: 'numeric', month: 'long'}}
+              dayHeaderFormat={isMobile ? {weekday: 'narrow'} : {weekday: 'short'}}
+              titleFormat={{year: 'numeric', month: isMobile ? 'short' : 'long'}}
+              aspectRatio={isMobile ? 1.0 : 1.35}
               eventClassNames={(info) => {
                 const status = info.event.extendedProps.status;
                 if (status === 'Approved') return ['event-approved'];
@@ -692,6 +754,12 @@ export default function Calendar() {
               eventDidMount={(info) => {
                 // Add tooltip
                 info.el.title = `${info.event.title}\nสถานะ: ${info.event.extendedProps.status}\nเหตุผล: ${info.event.extendedProps.reason || 'ไม่ได้ระบุ'}`;
+
+                // Mobile-specific event styling
+                if (isMobile) {
+                  info.el.style.fontSize = '0.75rem';
+                  info.el.style.padding = '1px 2px';
+                }
               }}
             />
           </Paper>
@@ -703,26 +771,59 @@ export default function Calendar() {
           onClose={handleCloseDialog}
           maxWidth='sm'
           fullWidth
+          fullScreen={isMobile}
           PaperProps={{
             sx: {
-              borderRadius: 3,
+              borderRadius: isMobile ? 0 : 3,
               background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
               color: 'white',
               backdropFilter: 'blur(10px)',
+              margin: isMobile ? 0 : 1,
+              maxHeight: isMobile ? '100vh' : '90vh',
             },
           }}
         >
-          <DialogTitle sx={{pb: 1, fontWeight: 'bold', fontSize: '1.5rem'}}>
+          <DialogTitle
+            sx={{
+              pb: 1,
+              fontWeight: 'bold',
+              fontSize: {xs: '1.25rem', sm: '1.5rem'},
+              position: isMobile ? 'sticky' : 'relative',
+              top: 0,
+              zIndex: 1,
+              backgroundColor: 'rgba(0,0,0,0.1)',
+            }}
+          >
             {selectedEvent?.eventType === 'holiday' ? '🎉 รายละเอียดวันหยุด' : '📋 รายละเอียดการลา'}
           </DialogTitle>
-          <DialogContent>
+          <DialogContent
+            sx={{
+              padding: {xs: 2, sm: 3},
+              maxHeight: isMobile ? 'calc(100vh - 140px)' : 'none',
+              overflowY: 'auto',
+            }}
+          >
             {selectedEvent && (
               <Box sx={{pt: 1}}>
-                <Typography variant='h6' sx={{mb: 2, fontWeight: 'bold'}}>
+                <Typography
+                  variant='h6'
+                  sx={{
+                    mb: 2,
+                    fontWeight: 'bold',
+                    fontSize: {xs: '1.1rem', sm: '1.25rem'},
+                    lineHeight: 1.2,
+                  }}
+                >
                   {selectedEvent.title}
                 </Typography>
 
-                <Box sx={{display: 'grid', gap: 1.5}}>
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gap: {xs: 1, sm: 1.5},
+                    fontSize: {xs: '0.875rem', sm: '1rem'},
+                  }}
+                >
                   {selectedEvent.eventType === 'holiday' ? (
                     // Holiday event details
                     <>
@@ -843,41 +944,58 @@ export default function Calendar() {
               </Box>
             )}
           </DialogContent>
-          <DialogActions sx={{p: 3}}>
+          <DialogActions
+            sx={{
+              p: {xs: 2, sm: 3},
+              flexDirection: isMobile ? 'column' : 'row',
+              gap: {xs: 1, sm: 0},
+              position: isMobile ? 'sticky' : 'relative',
+              bottom: 0,
+              backgroundColor: 'rgba(0,0,0,0.1)',
+            }}
+          >
             {/* Edit and Delete buttons for holidays (Manager, Developer, Operator only) */}
-            {selectedEvent?.eventType === 'holiday' && user && ['Manager', 'operator', 'Developer'].includes(user.role) && (
-              <>
-                <Button
-                  onClick={handleEditHoliday}
-                  variant='contained'
-                  sx={{
-                    backgroundColor: '#2196f3',
-                    color: 'white',
-                    mr: 1,
-                    '&:hover': {backgroundColor: '#1976d2'},
-                  }}
-                >
-                  ✏️ แก้ไข
-                </Button>
-                <Button
-                  onClick={handleDeleteHoliday}
-                  variant='contained'
-                  sx={{
-                    backgroundColor: '#f44336',
-                    color: 'white',
-                    mr: 1,
-                    '&:hover': {backgroundColor: '#d32f2f'},
-                  }}
-                >
-                  🗑️ ลบ
-                </Button>
-              </>
-            )}
+            {selectedEvent?.eventType === 'holiday' &&
+              user &&
+              ['Manager', 'operator', 'Developer'].includes(user.role) && (
+                <>
+                  <Button
+                    onClick={handleEditHoliday}
+                    variant='contained'
+                    fullWidth={isMobile}
+                    sx={{
+                      backgroundColor: '#2196f3',
+                      color: 'white',
+                      mr: isMobile ? 0 : 1,
+                      fontSize: {xs: '0.875rem', sm: '1rem'},
+                      '&:hover': {backgroundColor: '#1976d2'},
+                    }}
+                  >
+                    ✏️ แก้ไข
+                  </Button>
+                  <Button
+                    onClick={handleDeleteHoliday}
+                    variant='contained'
+                    fullWidth={isMobile}
+                    sx={{
+                      backgroundColor: '#f44336',
+                      color: 'white',
+                      mr: isMobile ? 0 : 1,
+                      fontSize: {xs: '0.875rem', sm: '1rem'},
+                      '&:hover': {backgroundColor: '#d32f2f'},
+                    }}
+                  >
+                    🗑️ ลบ
+                  </Button>
+                </>
+              )}
             <Button
               onClick={handleCloseDialog}
               variant='contained'
+              fullWidth={isMobile}
               sx={{
                 backgroundColor: 'rgba(255,255,255,0.2)',
+                fontSize: {xs: '0.875rem', sm: '1rem'},
                 '&:hover': {backgroundColor: 'rgba(255,255,255,0.3)'},
               }}
             >
@@ -892,32 +1010,66 @@ export default function Calendar() {
           onClose={cancelDeleteHoliday}
           maxWidth='sm'
           fullWidth
+          fullScreen={isMobile}
           PaperProps={{
             sx: {
-              borderRadius: 3,
+              borderRadius: isMobile ? 0 : 3,
               background: 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
               color: 'white',
+              margin: isMobile ? 0 : 1,
             },
           }}
         >
-          <DialogTitle sx={{pb: 1, fontWeight: 'bold', fontSize: '1.5rem'}}>
+          <DialogTitle
+            sx={{
+              pb: 1,
+              fontWeight: 'bold',
+              fontSize: {xs: '1.25rem', sm: '1.5rem'},
+              textAlign: 'center',
+            }}
+          >
             🗑️ ยืนยันการลบวันหยุด
           </DialogTitle>
-          <DialogContent>
-            <Typography variant='body1' sx={{mb: 2}}>
+          <DialogContent
+            sx={{
+              padding: {xs: 2, sm: 3},
+              textAlign: 'center',
+            }}
+          >
+            <Typography
+              variant='body1'
+              sx={{
+                mb: 2,
+                fontSize: {xs: '1rem', sm: '1.125rem'},
+              }}
+            >
               คุณแน่ใจหรือไม่ที่ต้องการลบวันหยุด "{holidayToDelete?.holidayName}"?
             </Typography>
-            <Typography variant='body2' sx={{color: 'rgba(255,255,255,0.8)'}}>
+            <Typography
+              variant='body2'
+              sx={{
+                color: 'rgba(255,255,255,0.8)',
+                fontSize: {xs: '0.875rem', sm: '1rem'},
+              }}
+            >
               การดำเนินการนี้ไม่สามารถยกเลิกได้
             </Typography>
           </DialogContent>
-          <DialogActions sx={{p: 3}}>
+          <DialogActions
+            sx={{
+              p: {xs: 2, sm: 3},
+              flexDirection: isMobile ? 'column' : 'row',
+              gap: {xs: 1, sm: 0},
+            }}
+          >
             <Button
               onClick={cancelDeleteHoliday}
               variant='contained'
+              fullWidth={isMobile}
               sx={{
                 backgroundColor: 'rgba(255,255,255,0.2)',
                 color: 'white',
+                fontSize: {xs: '0.875rem', sm: '1rem'},
                 '&:hover': {backgroundColor: 'rgba(255,255,255,0.3)'},
               }}
             >
@@ -926,9 +1078,11 @@ export default function Calendar() {
             <Button
               onClick={confirmDeleteHoliday}
               variant='contained'
+              fullWidth={isMobile}
               sx={{
                 backgroundColor: '#d32f2f',
                 color: 'white',
+                fontSize: {xs: '0.875rem', sm: '1rem'},
                 '&:hover': {backgroundColor: '#b71c1c'},
               }}
             >
@@ -950,27 +1104,65 @@ export default function Calendar() {
         </Snackbar>
       </Container>
 
-      <Dialog open={showCRUDLeaveCalendar} onClose={handleCRUDClose} maxWidth='md' fullWidth>
+      <Dialog
+        open={showCRUDLeaveCalendar}
+        onClose={handleCRUDClose}
+        maxWidth='md'
+        fullWidth
+        fullScreen={isMobile}
+        PaperProps={{
+          sx: {
+            borderRadius: isMobile ? 0 : 3,
+            margin: isMobile ? 0 : 1,
+            maxHeight: isMobile ? '100vh' : '95vh',
+          },
+        }}
+      >
         <DialogTitle
           sx={{
             background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
             color: 'white',
             fontWeight: 'bold',
+            fontSize: {xs: '1.25rem', sm: '1.5rem'},
+            position: isMobile ? 'sticky' : 'relative',
+            top: 0,
+            zIndex: 1,
           }}
         >
           {editingHoliday ? '✏️ แก้ไขวันหยุด' : '🗓️ จัดการวันหยุด / เพิ่มวันหยุด'}
         </DialogTitle>
-        <DialogContent sx={{mt: 2}}>
-          <Typography variant='body1' sx={{mb: 3}}>
+        <DialogContent
+          sx={{
+            mt: 2,
+            padding: {xs: 2, sm: 3},
+            maxHeight: isMobile ? 'calc(100vh - 160px)' : 'none',
+            overflowY: 'auto',
+          }}
+        >
+          <Typography
+            variant='body1'
+            sx={{
+              mb: 3,
+              fontSize: {xs: '0.875rem', sm: '1rem'},
+            }}
+          >
             คุณสามารถ:
-            <ul>
+            <ul style={{paddingLeft: '20px', margin: '8px 0'}}>
               <li>เพิ่มวันหยุดวันเดียว (เลือกวันที่เดียว)</li>
               <li>เพิ่มวันหยุดช่วงวันที่ (เลือกวันเริ่มต้นและสิ้นสุด)</li>
               <li>ระบุชื่อวันหยุดและประเภท</li>
             </ul>
           </Typography>
 
-          <Box component='form' onSubmit={handleSubmit} sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
+          <Box
+            component='form'
+            onSubmit={handleSubmit}
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: {xs: 2, sm: 3},
+            }}
+          >
             {/* Holiday Name */}
             <TextField
               label='🏷️ ชื่อวันหยุด'
@@ -1131,16 +1323,27 @@ export default function Calendar() {
             )}
           </Box>
         </DialogContent>
-        <DialogActions sx={{p: 3, gap: 1}}>
+        <DialogActions
+          sx={{
+            p: {xs: 2, sm: 3},
+            gap: {xs: 1, sm: 1},
+            flexDirection: isMobile ? 'column' : 'row',
+            position: isMobile ? 'sticky' : 'relative',
+            bottom: 0,
+            backgroundColor: '#f5f5f5',
+          }}
+        >
           <Button
             type='submit'
             variant='contained'
             color='primary'
             onClick={handleSubmit}
             disabled={!holidayName || (!selectedDate && !(startDate && endDate))}
+            fullWidth={isMobile}
             sx={{
               borderRadius: 2,
               px: 3,
+              fontSize: {xs: '0.875rem', sm: '1rem'},
               '&:hover': {
                 transform: 'translateY(-1px)',
               },
@@ -1152,9 +1355,11 @@ export default function Calendar() {
             onClick={handleCRUDClose}
             variant='outlined'
             color='primary'
+            fullWidth={isMobile}
             sx={{
               borderRadius: 2,
               px: 3,
+              fontSize: {xs: '0.875rem', sm: '1rem'},
             }}
           >
             ❌ ยกเลิก
