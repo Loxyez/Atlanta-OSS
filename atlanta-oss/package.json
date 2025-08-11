@@ -7,12 +7,18 @@
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
     "@fortawesome/fontawesome-free": "^6.6.0",
+    "@fullcalendar/core": "^6.1.19",
+    "@fullcalendar/daygrid": "^6.1.19",
+    "@fullcalendar/interaction": "^6.1.19",
+    "@fullcalendar/react": "^6.1.19",
+    "@fullcalendar/timegrid": "^6.1.19",
     "@mui/icons-material": "^5.16.7",
     "@mui/lab": "^5.0.0-alpha.173",
     "@mui/material": "^5.16.7",
     "@mui/x-date-pickers": "^7.13.0",
     "@mui/x-date-pickers-pro": "^7.13.0",
     "@popperjs/core": "^2.11.8",
+    "@react-pdf/renderer": "^4.2.2",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
@@ -21,10 +27,13 @@
     "bootstrap": "^5.3.3",
     "date-fns": "^3.6.0",
     "env-cmd": "^10.1.0",
+    "file-saver": "^2.0.5",
     "jquery": "^3.7.1",
     "jwt-decode": "^4.0.0",
+    "moment": "^2.30.1",
     "react": "^18.3.1",
     "react-bootstrap": "^2.10.4",
+    "react-date-range": "^2.0.0-alpha.4",
     "react-datepicker": "^7.3.0",
     "react-dom": "^18.3.1",
     "react-icons": "^5.2.1",
@@ -40,13 +49,41 @@
     "eject": "react-scripts eject",
     "start:local": "env-cmd -f .env.development.local react-scripts start",
     "start:dev": "env-cmd -f .env.development react-scripts start",
-    "start:prod": "env-cmd -f .env.production react-scripts start"
+    "start:prod": "env-cmd -f .env.production react-scripts start",
+    "prettier": "prettier --check .",
+    "prettier:fix": "prettier --write .",
+    "prettier:check": "prettier --check src/**/*.{js,jsx,ts,tsx,json,css,scss,md}",
+    "lint": "eslint src/**/*.{js,jsx,ts,tsx}",
+    "lint:fix": "eslint src/**/*.{js,jsx,ts,tsx} --fix",
+    "format": "npm run prettier:fix && npm run lint:fix"
   },
   "eslintConfig": {
     "extends": [
       "react-app",
       "react-app/jest"
-    ]
+    ],
+    "rules": {
+      "react/prop-types": "off",
+      "max-len": [
+        "warn",
+        {
+          "code": 120,
+          "ignoreUrls": true,
+          "ignoreStrings": true,
+          "ignoreTemplateLiterals": true
+        }
+      ],
+      "no-unused-vars": "warn",
+      "camelcase": "warn",
+      "eqeqeq": "warn"
+    },
+    "parserOptions": {
+      "ecmaVersion": 2020,
+      "sourceType": "module",
+      "ecmaFeatures": {
+        "jsx": true
+      }
+    }
   },
   "browserslist": {
     "production": [
@@ -59,5 +96,22 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "lint-staged": {
+    "src/**/*.{js,jsx,ts,tsx}": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "src/**/*.{json,css,scss,md}": [
+      "prettier --write"
+    ]
+  },
+  "devDependencies": {
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^13.3.0",
+    "prettier": "^3.6.2"
   }
 }

@@ -1,25 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 import axios from 'axios';
-import { 
-    Container, 
-    Grid, 
-    Paper, 
-    Typography, 
-    TextField, 
-    Button, 
-    Dialog, 
-    DialogTitle, 
-    DialogContent, 
-    DialogActions,
-    CircularProgress
+import {
+  Container,
+  Grid,
+  Paper,
+  Typography,
+  TextField,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  CircularProgress,
 } from '@mui/material';
-import { Autocomplete } from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
-import { LocalizationProvider } from '@mui/x-date-pickers';
+import {Autocomplete} from '@mui/material';
+import {DatePicker} from '@mui/x-date-pickers';
+import {AdapterDateFns} from '@mui/x-date-pickers/AdapterDateFnsV3';
+import {LocalizationProvider} from '@mui/x-date-pickers';
 import CustomNavbar from '../navigation-bar/navbar';
 import config from '../../utils/config';
-import { CloudUpload } from '@mui/icons-material';
+import {CloudUpload} from '@mui/icons-material';
 
 export default function CreateTask() {
   const [members, setMembers] = useState([]);
@@ -59,7 +59,7 @@ export default function CreateTask() {
       const token = localStorage.getItem('token') || sessionStorage.getItem('token');
       try {
         const res = await axios.get(`${config.apiBaseUrl}/members/get_all_members`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: {Authorization: `Bearer ${token}`},
         });
         setMembers(res.data);
       } catch (error) {
@@ -71,7 +71,7 @@ export default function CreateTask() {
       const token = localStorage.getItem('token') || sessionStorage.getItem('token');
       try {
         const res = await axios.get(`${config.apiBaseUrl}/staffs/get_staff_cardids`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: {Authorization: `Bearer ${token}`},
         });
         setStaffDetails(res.data);
       } catch (error) {
@@ -83,7 +83,7 @@ export default function CreateTask() {
       const token = localStorage.getItem('token') || sessionStorage.getItem('token');
       try {
         const res = await axios.get(`${config.apiBaseUrl}/devices/get_device_models`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: {Authorization: `Bearer ${token}`},
         });
         setDeviceModel(res.data);
       } catch (error) {
@@ -95,7 +95,7 @@ export default function CreateTask() {
       const token = localStorage.getItem('token') || sessionStorage.getItem('token');
       try {
         const res = await axios.get(`${config.apiBaseUrl}/devices/get_device_category`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: {Authorization: `Bearer ${token}`},
         });
         setDeviceCategory(res.data);
       } catch (error) {
@@ -152,9 +152,7 @@ export default function CreateTask() {
     e.preventDefault();
     setLoading(true);
 
-    const formattedTaskEndDate = taskEndDate 
-        ? new Date(taskEndDate).toISOString()
-        : null;
+    const formattedTaskEndDate = taskEndDate ? new Date(taskEndDate).toISOString() : null;
 
     const taskData = new FormData();
     taskData.append('memberid', memberId);
@@ -166,7 +164,7 @@ export default function CreateTask() {
     taskData.append('task_device_detail', taskDeviceDetail);
     taskData.append('staff_cardid', staffCardId);
     taskData.append('task_end_date_at', formattedTaskEndDate);
-    
+
     if (taskPic) {
       taskData.append('task_pic', taskPic);
     }
@@ -174,10 +172,10 @@ export default function CreateTask() {
     try {
       const token = localStorage.getItem('token') || sessionStorage.getItem('token');
       const res = await axios.post(`${config.apiBaseUrl}/tasks/create_task`, taskData, {
-        headers: { 
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data' 
-        }
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+        },
       });
 
       if (res.status === 201) {
@@ -231,15 +229,15 @@ export default function CreateTask() {
       setShowErrorModal(true); // เปิด Error Modal
       return;
     }
-  
+
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     try {
       const res = await axios.post(
-        `${config.apiBaseUrl}/members/add_member`, 
-        { member_name: newMemberName, member_phone: newMemberPhone },
-        { headers: { Authorization: `Bearer ${token}` } }
+        `${config.apiBaseUrl}/members/add_member`,
+        {member_name: newMemberName, member_phone: newMemberPhone},
+        {headers: {Authorization: `Bearer ${token}`}}
       );
-  
+
       if (res.status === 201) {
         setSuccess('เพิ่มสมาชิกใหม่เรียบร้อย');
         setShowSuccessModal(true); // เปิด Success Modal
@@ -259,11 +257,11 @@ export default function CreateTask() {
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     try {
       const res = await axios.post(
-        `${config.apiBaseUrl}/devices/add_device_model`, 
-        { name: newDeviceModel },
-        { headers: { Authorization: `Bearer ${token}` } }
+        `${config.apiBaseUrl}/devices/add_device_model`,
+        {name: newDeviceModel},
+        {headers: {Authorization: `Bearer ${token}`}}
       );
-  
+
       if (res.status === 201) {
         setSuccess('เพิ่มรุ่นอุปกรณ์ใหม่เรียบร้อย');
         setShowSuccessModal(true); // เปิด Success Modal
@@ -277,15 +275,15 @@ export default function CreateTask() {
       setError('เกิดข้อผิดพลาดขณะเพิ่มรุ่นอุปกรณ์');
       setShowErrorModal(true); // เปิด Error Modal
     }
-  }
+  };
 
   const handleAddDeviceCategory = async () => {
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     try {
       const res = await axios.post(
-        `${config.apiBaseUrl}/devices/add_device_category`, 
-        { name: newDeviceCategory },
-        { headers: { Authorization: `Bearer ${token}` } }
+        `${config.apiBaseUrl}/devices/add_device_category`,
+        {name: newDeviceCategory},
+        {headers: {Authorization: `Bearer ${token}`}}
       );
 
       if (res.status === 201) {
@@ -297,32 +295,33 @@ export default function CreateTask() {
         setError('ไม่สามารถเพิ่มประเภทอุปกรณ์ได้');
         setShowErrorModal(true); // เปิด Error Modal
       }
-    }
-    catch (error) {
+    } catch (error) {
       setError('เกิดข้อผิดพลาดขณะเพิ่มประเภทอุปกรณ์');
       setShowErrorModal(true); // เปิด Error Modal
     }
-  }
+  };
 
   return (
     <div>
       <CustomNavbar />
-      <Container maxWidth="md" sx={{ mt: 4 }}>
-        <Paper elevation={3} sx={{ p: 4 }}>
-          <Typography variant="h4" gutterBottom>เพิ่มข้อมูลงาน</Typography>
+      <Container maxWidth='md' sx={{mt: 4}}>
+        <Paper elevation={3} sx={{p: 4}}>
+          <Typography variant='h4' gutterBottom>
+            เพิ่มข้อมูลงาน
+          </Typography>
           <form onSubmit={handleSubmit}>
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
                 <Autocomplete
                   options={members}
-                  getOptionLabel={(option) => option.member_name}
+                  getOptionLabel={(option) => `${option.member_name} (${option.member_phone})`}
                   onChange={handleMemberChange}
                   renderInput={(params) => (
-                    <TextField 
-                      {...params} 
-                      label="เลือกสมาชิก" 
-                      fullWidth 
-                      required 
+                    <TextField
+                      {...params}
+                      label='เลือกสมาชิก'
+                      fullWidth
+                      required
                       InputProps={{
                         ...params.InputProps,
                         endAdornment: (
@@ -330,37 +329,28 @@ export default function CreateTask() {
                             {params.InputProps.endAdornment}
                             <Button onClick={openAddMemberDialog}>เพิ่มสมาชิก</Button>
                           </>
-                        )
+                        ),
                       }}
                     />
                   )}
                 />
-                {memberId && <Typography variant="body2">ID สมาชิก: {memberId}</Typography>}
+                {memberId && <Typography variant='body2'>ID สมาชิก: {memberId}</Typography>}
               </Grid>
 
               <Grid item xs={12} sm={6}>
                 <Autocomplete
-                    options={staffDetails}
-                    getOptionLabel={(option) => option.staff_name || ''} 
-                    onChange={handleStaffChange}
-                    renderInput={(params) => (
-                    <TextField 
-                        {...params} 
-                        label="เลือกพนักงาน (ชื่อเล่น)" 
-                        fullWidth 
-                        required 
-                    />
-                    )}
+                  options={staffDetails}
+                  getOptionLabel={(option) => option.staff_name || ''}
+                  onChange={handleStaffChange}
+                  renderInput={(params) => <TextField {...params} label='เลือกพนักงาน (ชื่อเล่น)' fullWidth required />}
                 />
-                {staffCardId && (
-                    <Typography variant="body2">Card ID พนักงาน: {staffCardId}</Typography>
-                )}
+                {staffCardId && <Typography variant='body2'>Card ID พนักงาน: {staffCardId}</Typography>}
               </Grid>
 
               {/* Task Detail Input */}
               <Grid item xs={12}>
                 <TextField
-                  label="รายละเอียดงาน"
+                  label='รายละเอียดงาน'
                   multiline
                   rows={4}
                   value={taskDetail}
@@ -372,79 +362,79 @@ export default function CreateTask() {
 
               <Grid item xs={12}>
                 <TextField
-                    label="รายละเอียดการแก้ไขงาน"
-                    multiline
-                    rows={4}
-                    value={taskFixDetail}
-                    onChange={(e) => setTaskFixDetail(e.target.value)}
-                    fullWidth
-                    required
+                  label='รายละเอียดการแก้ไขงาน'
+                  multiline
+                  rows={4}
+                  value={taskFixDetail}
+                  onChange={(e) => setTaskFixDetail(e.target.value)}
+                  fullWidth
+                  required
                 />
               </Grid>
 
               <Grid item xs={6}>
                 <Autocomplete
-                    options={deviceCategory}
-                    getOptionLabel={(option) => option.name}
-                    onChange={handleDeviceCategoryChange}
-                    renderInput={(params) => (
-                      <TextField 
-                          {...params} 
-                          label="เลือกประเภทอุปกรณ์" 
-                          fullWidth 
-                          required
-                          InputProps={{
-                            ...params.InputProps,
-                            endAdornment: (
-                              <>
-                                {params.InputProps.endAdornment}
-                                <Button onClick={openAddDeviceCategoryDialog}>เพิ่มประเภทอุปกรณ์</Button>
-                              </>
-                            )
-                          }}
-                      />
-                    )}
+                  options={deviceCategory}
+                  getOptionLabel={(option) => option.name}
+                  onChange={handleDeviceCategoryChange}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label='เลือกประเภทอุปกรณ์'
+                      fullWidth
+                      required
+                      InputProps={{
+                        ...params.InputProps,
+                        endAdornment: (
+                          <>
+                            {params.InputProps.endAdornment}
+                            <Button onClick={openAddDeviceCategoryDialog}>เพิ่มประเภทอุปกรณ์</Button>
+                          </>
+                        ),
+                      }}
+                    />
+                  )}
                 />
               </Grid>
 
               <Grid item xs={6}>
                 <Autocomplete
-                    options={deviceModel}
-                    getOptionLabel={(option) => option.name}
-                    onChange={handleDeviceModelChange}
-                    renderInput={(params) => (
-                      <TextField 
-                          {...params} 
-                          label="เลือกรุ่นอุปกรณ์" 
-                          fullWidth 
-                          required
-                          InputProps={{
-                            ...params.InputProps,
-                            endAdornment: (
-                              <>
-                                {params.InputProps.endAdornment}
-                                <Button onClick={openAddDeviceModelDialog}>เพิ่มรุ่นอุปกรณ์</Button>
-                              </>
-                            )
-                          }}
-                      />
-                    )}
+                  options={deviceModel}
+                  getOptionLabel={(option) => option.name}
+                  onChange={handleDeviceModelChange}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label='เลือกรุ่นอุปกรณ์'
+                      fullWidth
+                      required
+                      InputProps={{
+                        ...params.InputProps,
+                        endAdornment: (
+                          <>
+                            {params.InputProps.endAdornment}
+                            <Button onClick={openAddDeviceModelDialog}>เพิ่มรุ่นอุปกรณ์</Button>
+                          </>
+                        ),
+                      }}
+                    />
+                  )}
                 />
               </Grid>
 
               <Grid item xs={12}>
                 <TextField
-                    label="รายระเอียดอุปกรณ์"
-                    value={taskDeviceDetail}
-                    onChange={(e) => setTaskDeviceDetail(e.target.value)}
-                    fullWidth
+                  label='รายระเอียดอุปกรณ์'
+                  value={taskDeviceDetail}
+                  onChange={(e) => setTaskDeviceDetail(e.target.value)}
+                  fullWidth
                 />
               </Grid>
 
               <Grid item xs={12} sm={6}>
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                   <DatePicker
-                    label="วันที่กำหนดส่งงาน"
+                    label='วันที่กำหนดส่งงาน'
                     value={taskEndDate}
                     onChange={(newValue) => setTaskEndDate(newValue)}
                     renderInput={(params) => <TextField {...params} fullWidth />}
@@ -453,82 +443,72 @@ export default function CreateTask() {
               </Grid>
 
               <Grid item xs={12} sm={6}>
-                <Button
-                  variant="outlined"
-                  component="label"
-                  startIcon={<CloudUpload />}
-                  fullWidth
-                >
+                <Button variant='outlined' component='label' startIcon={<CloudUpload />} fullWidth>
                   อัปโหลดรูปภาพ
-                  <input 
-                    type="file" 
-                    accept="image/*" 
-                    hidden 
-                    onChange={handleFileChange} 
-                  />
+                  <input type='file' accept='image/*' hidden onChange={handleFileChange} />
                 </Button>
-                {taskPic && <Typography variant="body2">ไฟล์: {taskPic.name}</Typography>}
+                {taskPic && <Typography variant='body2'>ไฟล์: {taskPic.name}</Typography>}
               </Grid>
             </Grid>
-            <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 3 }} disabled={loading}>
-              {loading ? <CircularProgress size={24} color="inherit"/> : 'บันทึกข้อมูล'}
+            <Button type='submit' variant='contained' color='primary' fullWidth sx={{mt: 3}} disabled={loading}>
+              {loading ? <CircularProgress size={24} color='inherit' /> : 'บันทึกข้อมูล'}
             </Button>
           </form>
         </Paper>
       </Container>
 
       {/* Success Modal */}
-        <Dialog open={showSuccessModal} onClose={handleCloseSuccessModal}>
+      <Dialog open={showSuccessModal} onClose={handleCloseSuccessModal}>
         <DialogTitle>สำเร็จ</DialogTitle>
         <DialogContent>
-            <Typography>{success}</Typography>
+          <Typography>{success}</Typography>
         </DialogContent>
         <DialogActions>
-            <Button onClick={handleCloseSuccessModal} color="primary">
+          <Button onClick={handleCloseSuccessModal} color='primary'>
             ตกลง
-            </Button>
+          </Button>
         </DialogActions>
-        </Dialog>
+      </Dialog>
 
-        {/* Error Modal */}
-        <Dialog open={showErrorModal} onClose={handleCloseErrorModal}>
+      {/* Error Modal */}
+      <Dialog open={showErrorModal} onClose={handleCloseErrorModal}>
         <DialogTitle>เกิดข้อผิดพลาด</DialogTitle>
         <DialogContent>
-            <Typography>{error}</Typography>
+          <Typography>{error}</Typography>
         </DialogContent>
         <DialogActions>
-            <Button onClick={handleCloseErrorModal} color="primary">
+          <Button onClick={handleCloseErrorModal} color='primary'>
             ตกลง
-            </Button>
+          </Button>
         </DialogActions>
-        </Dialog>
+      </Dialog>
 
       {/* Add Member Dialog */}
       <Dialog open={showAddMemberDialog} onClose={closeAddMemberDialog}>
         <DialogTitle>เพิ่มสมาชิกใหม่</DialogTitle>
         <DialogContent>
           <TextField
-            label="ชื่อสมาชิก"
+            label='ชื่อสมาชิก'
             value={newMemberName}
             onChange={(e) => setNewMemberName(e.target.value)}
             fullWidth
             required
-            sx={{ mb: 2 }}
+            sx={{mb: 2}}
           />
           <TextField
-            label="เบอร์โทรศัพท์"
+            label='เบอร์โทรศัพท์'
             value={newMemberPhone}
             onChange={(e) => setNewMemberPhone(e.target.value)}
             fullWidth
             required
-            sx={{ mb: 2 }}
+            sx={{mb: 2}}
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={closeAddMemberDialog} color="error">
+          <Button onClick={closeAddMemberDialog} color='error'>
             ยกเลิก
           </Button>
-          <Button onClick={handleAddMember} color="primary">
+          <Button onClick={handleAddMember} color='primary'>
             บันทึก
           </Button>
         </DialogActions>
@@ -539,19 +519,19 @@ export default function CreateTask() {
         <DialogTitle>เพิ่มรุ่นอุปกรณ์ใหม่</DialogTitle>
         <DialogContent>
           <TextField
-            label="ชื่อรุ่นอุปกรณ์"
+            label='ชื่อรุ่นอุปกรณ์'
             value={newDeviceModel}
             onChange={(e) => setNewDeviceModel(e.target.value)}
             fullWidth
             required
-            sx={{ mb: 2 }}
+            sx={{mb: 2}}
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={closeAddDeviceModelDialog} color="error">
+          <Button onClick={closeAddDeviceModelDialog} color='error'>
             ยกเลิก
           </Button>
-          <Button onClick={handleAddDeviceModel} color="primary">
+          <Button onClick={handleAddDeviceModel} color='primary'>
             บันทึก
           </Button>
         </DialogActions>
@@ -562,19 +542,19 @@ export default function CreateTask() {
         <DialogTitle>เพิ่มประเภทอุปกรณ์ใหม่</DialogTitle>
         <DialogContent>
           <TextField
-            label="ชื่อประเภทอุปกรณ์"
+            label='ชื่อประเภทอุปกรณ์'
             value={newDeviceCategory}
             onChange={(e) => setNewDeviceCategory(e.target.value)}
             fullWidth
             required
-            sx={{ mb: 2 }}
+            sx={{mb: 2}}
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={closeAddDeviceCategoryDialog} color="error">
+          <Button onClick={closeAddDeviceCategoryDialog} color='error'>
             ยกเลิก
           </Button>
-          <Button onClick={handleAddDeviceCategory} color="primary">
+          <Button onClick={handleAddDeviceCategory} color='primary'>
             บันทึก
           </Button>
         </DialogActions>

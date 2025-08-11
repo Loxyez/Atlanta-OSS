@@ -1,0 +1,381 @@
+/* Calendar Custom Styles */
+
+.calendar-container {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  padding: 20px 0;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+  .calendar-container {
+    padding: 10px 0;
+  }
+
+  .fc-toolbar {
+    flex-direction: column !important;
+    gap: 8px !important;
+    padding: 8px !important;
+  }
+
+  .fc-toolbar-chunk {
+    display: flex !important;
+    justify-content: center !important;
+    margin: 0 !important;
+  }
+
+  .fc-button-group {
+    margin: 0 !important;
+  }
+
+  .fc-button {
+    padding: 6px 10px !important;
+    font-size: 0.75rem !important;
+    margin: 0 2px !important;
+  }
+
+  .fc-toolbar-title {
+    font-size: 1.2rem !important;
+    text-align: center !important;
+    margin: 8px 0 !important;
+  }
+
+  .fc-daygrid-day-number {
+    font-size: 0.875rem !important;
+    padding: 2px !important;
+  }
+
+  .fc-event {
+    font-size: 0.75rem !important;
+    padding: 2px 4px !important;
+    margin: 1px 0 !important;
+  }
+
+  .fc-daygrid-event {
+    margin-top: 1px !important;
+    margin-bottom: 1px !important;
+  }
+
+  .fc-day-header {
+    padding: 8px 2px !important;
+    font-size: 0.75rem !important;
+  }
+
+  .fc-col-header-cell {
+    padding: 4px 2px !important;
+  }
+
+  .fc-daygrid-day {
+    min-height: 60px !important;
+  }
+
+  /* Touch-friendly event hovering */
+  .fc-event:active {
+    transform: scale(0.95) !important;
+  }
+}
+
+/* Tablet Styles */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .fc-toolbar-title {
+    font-size: 1.5rem !important;
+  }
+
+  .fc-button {
+    padding: 8px 12px !important;
+    font-size: 0.875rem !important;
+  }
+
+  .fc-event {
+    font-size: 0.875rem !important;
+    padding: 3px 6px !important;
+  }
+}
+
+.fc-day-today-custom {
+  background-color: rgba(25, 118, 210, 0.1) !important;
+  border: 2px solid #1976d2 !important;
+  border-radius: 8px !important;
+}
+
+.fc-event {
+  border-radius: 8px !important;
+  border: none !important;
+  padding: 4px 8px !important;
+  font-weight: 500 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+.fc-event:hover {
+  transform: scale(1.05) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
+  z-index: 1000 !important;
+}
+
+.fc-day-other .fc-daygrid-day-number {
+  color: #ccc !important;
+}
+
+.fc-toolbar-title {
+  font-size: 1.8rem !important;
+  font-weight: bold !important;
+  color: #2c3e50 !important;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.fc-button-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+  padding: 8px 16px !important;
+  transition: all 0.3s ease !important;
+}
+
+.fc-button-primary:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3) !important;
+  background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%) !important;
+}
+
+.fc-button-primary:disabled {
+  background: #ccc !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.fc-daygrid-day-frame {
+  cursor: pointer !important;
+  transition: background-color 0.2s ease !important;
+  border-radius: 4px !important;
+  margin: 1px !important;
+}
+
+.fc-daygrid-day-frame:hover {
+  background-color: rgba(63, 81, 181, 0.1) !important;
+}
+
+.fc-daygrid-day-number {
+  font-weight: 600 !important;
+  color: #2c3e50 !important;
+  padding: 4px !important;
+}
+
+.fc-col-header-cell {
+  background: linear-gradient(135deg, #f8f9ff 0%, #e3e8ff 100%) !important;
+  border: none !important;
+  font-weight: bold !important;
+  color: #4c51bf !important;
+  text-transform: uppercase !important;
+  font-size: 0.9rem !important;
+}
+
+.fc-scrollgrid {
+  border: none !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+}
+
+.fc-daygrid-day {
+  border: 1px solid #e2e8f0 !important;
+}
+
+.fc-daygrid-day.fc-day-today {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%) !important;
+}
+
+/* Weekend styling */
+.fc-day-sun {
+  background-color: rgba(255, 0, 0, 0.05) !important;
+}
+
+/* More link styling */
+.fc-more-link {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+  border-radius: 12px !important;
+  padding: 2px 8px !important;
+  font-size: 0.8rem !important;
+  font-weight: 500 !important;
+  text-decoration: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.fc-more-link:hover {
+  transform: scale(1.05) !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Event colors for different statuses */
+.event-approved {
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%) !important;
+  color: white !important;
+}
+
+.event-pending {
+  background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%) !important;
+  color: white !important;
+}
+
+.event-denied {
+  background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%) !important;
+  color: white !important;
+}
+
+/* Custom scrollbar for calendar */
+.fc-scroller::-webkit-scrollbar {
+  width: 8px;
+}
+
+.fc-scroller::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.fc-scroller::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 10px;
+}
+
+.fc-scroller::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+}
+
+/* Animation for calendar load */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fc {
+  animation: fadeInUp 0.5s ease-out !important;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .fc-toolbar-title {
+    font-size: 1.2rem !important;
+  }
+
+  .fc-button-primary {
+    padding: 6px 12px !important;
+    font-size: 0.9rem !important;
+  }
+
+  .fc-daygrid-day-number {
+    font-size: 0.9rem !important;
+  }
+}
+
+/* Special effects */
+.calendar-glow {
+  box-shadow:
+    0 0 20px rgba(102, 126, 234, 0.3),
+    0 0 40px rgba(118, 75, 162, 0.2),
+    0 0 60px rgba(102, 126, 234, 0.1) !important;
+}
+
+/* Loading animation */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.loading-calendar {
+  animation: pulse 2s infinite;
+}
+
+/* React Date Range Custom Styles */
+.rdrCalendarWrapper {
+  color: #2c3e50 !important;
+  font-family: inherit !important;
+}
+
+.rdrMonth .rdrWeekDays {
+  background-color: #f8f9fa !important;
+}
+
+.rdrDayNumber {
+  color: #2c3e50 !important;
+}
+
+.rdrDayToday .rdrDayNumber:after {
+  background: #3f51b5 !important;
+}
+
+.rdrDay:not(.rdrDayPassive) .rdrInRange ~ .rdrDayNumber,
+.rdrDay:not(.rdrDayPassive) .rdrStartEdge ~ .rdrDayNumber,
+.rdrDay:not(.rdrDayPassive) .rdrEndEdge ~ .rdrDayNumber {
+  color: #fff !important;
+}
+
+.rdrDayStartEdge,
+.rdrDayEndEdge,
+.rdrDayInRange {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+.rdrDayHovered {
+  background: rgba(102, 126, 234, 0.2) !important;
+}
+
+.rdrMonthAndYearWrapper {
+  background-color: #f8f9fa !important;
+  border-bottom: 1px solid #e0e0e0 !important;
+}
+
+.rdrMonthAndYearPickers {
+  color: #2c3e50 !important;
+}
+
+.rdrNextPrevButton {
+  background-color: #fff !important;
+  border: 1px solid #e0e0e0 !important;
+  color: #2c3e50 !important;
+}
+
+.rdrNextPrevButton:hover {
+  background-color: #f5f5f5 !important;
+}
+
+.rdrDateDisplayWrapper {
+  background-color: #f8f9fa !important;
+  border: 1px solid #e0e0e0 !important;
+}
+
+.rdrDateInput {
+  color: #2c3e50 !important;
+}
+
+/* Mobile adjustments for react-date-range */
+@media (max-width: 768px) {
+  .rdrCalendarWrapper {
+    font-size: 14px !important;
+  }
+  
+  .rdrMonth {
+    width: 100% !important;
+  }
+  
+  .rdrDateDisplayWrapper {
+    margin: 10px 0 !important;
+  }
+  
+  .rdrDay {
+    height: 36px !important;
+  }
+}

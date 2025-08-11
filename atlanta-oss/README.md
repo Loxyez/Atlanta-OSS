@@ -14,7 +14,6 @@ To develop in local environment when developer want to develop API geteway from 
 
 To allow developer that want to implement UX/UI only
 
-
 Runs the app in the development mode.\
 Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 
