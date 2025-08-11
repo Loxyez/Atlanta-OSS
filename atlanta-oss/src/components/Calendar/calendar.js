@@ -1,4 +1,4 @@
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useCallback} from 'react';
 import axios from 'axios';
 import CustomNavbar from '../navigation-bar/navbar';
 import {jwtDecode} from 'jwt-decode';
@@ -9,6 +9,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import './calendar.css';
+import HolidayDialog from '../dialog/HolidayDialog';
 import {
   Container,
   Paper,
@@ -25,7 +26,13 @@ import {
   TextField,
   FormControlLabel,
   Checkbox,
+  Collapse,
+  IconButton,
 } from '@mui/material';
+import {DateRange, DefinedRange, createStaticRanges, defaultStaticRanges} from 'react-date-range';
+import 'react-date-range/dist/styles.css'; // main css file
+import 'react-date-range/dist/theme/default.css'; // theme css file
+import {FilterList, ExpandMore, ExpandLess} from '@mui/icons-material';
 import SuccessModal from '../Modal/SuccessModal';
 import ErrorModal from '../Modal/ErrorModel';
 import {set} from 'date-fns';
@@ -33,6 +40,7 @@ import {set} from 'date-fns';
 export default function Calendar() {
   const [user, setUser] = useState(null);
   const [eventDetails, setEventDetails] = useState(null);
+  const [allEvents, setAllEvents] = useState(null); // Store all events for filtering
   const [selectedDate, setSelectedDate] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -55,6 +63,21 @@ export default function Calendar() {
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [holidayToDelete, setHolidayToDelete] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
+
+  // New holiday dialog state
+  const [showNewHolidayDialog, setShowNewHolidayDialog] = useState(false);
+  const [isLoadingCalendarData, setIsLoadingCalendarData] = useState(false);
+
+  // Date range picker state
+  const [showDateRangeFilter, setShowDateRangeFilter] = useState(false);
+  const [dateRange, setDateRange] = useState([
+    {
+      startDate: new Date(),
+      endDate: new Date(),
+      key: 'selection'
+    }
+  ]);
+  const [isDateRangeActive, setIsDateRangeActive] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -88,145 +111,172 @@ export default function Calendar() {
       }
     }
 
-    const fetchLeaveRequests = async () => {
-      try {
-        const res = await axios.get(`${config.apiBaseUrl}/leave_requests/all_leave_requests`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (res.data) {
-          setEventDetails(
-            res.data
-              .map((req) => {
-                // Determine event color based on status
-                let color = '#099ce5'; // default
-                if (req.status === 'Approved') color = '#4caf50';
-                else if (req.status === 'Denied') color = '#f44336';
-                else if (req.status === 'Pending') color = '#ff9800';
-
-                // For multi-day leave, create an event for each day
-                const eventsForRequest = [];
-
-                // Use timezone-safe date parsing for display
-                const startDateStr = req.start_date.split('T')[0]; // Get YYYY-MM-DD part only
-                const endDateStr = req.end_date.split('T')[0]; // Get YYYY-MM-DD part only
-
-                // Calculate the end date for FullCalendar (needs to be the day after for multi-day events)
-                const endDateParts = endDateStr.split('-');
-                const calendarEndDate = new Date(endDateParts[0], endDateParts[1] - 1, parseInt(endDateParts[2]) + 1);
-                const calendarEndDateStr = `${calendarEndDate.getFullYear()}-${String(calendarEndDate.getMonth() + 1).padStart(2, '0')}-${String(calendarEndDate.getDate()).padStart(2, '0')}`;
-
-                // Determine if this is a multi-day event or single day
-                const isMultiDay = startDateStr !== endDateStr;
-
-                if (isMultiDay || req.leave_period === 'full-day' || req.leave_period === 'full') {
-                  // Create a single all-day event for multi-day or full-day leave
-                  eventsForRequest.push({
-                    id: `leave-${req.request_id}`,
-                    title: `${req.staff_details?.staff_name || req.staff_cardid} - ${req.leave_types?.leave_name || 'Leave'}`,
-                    start: startDateStr,
-                    end: calendarEndDateStr,
-                    allDay: true,
-                    backgroundColor: color,
-                    borderColor: color,
-                    extendedProps: {
-                      staffName: req.staff_details?.staff_name || req.staff_cardid,
-                      leaveType: req.leave_types?.leave_name,
-                      reason: req.reason,
-                      status: req.status,
-                      leavePeriod: req.leave_period,
-                      requestId: req.request_id,
-                      eventType: 'leave',
-                    },
-                  });
-                } else {
-                  // For half-day leave, create timed events
-                  let startTime;
-                  let endTime;
-                  if (req.leave_period === 'half-morning') {
-                    startTime = '09:00:00';
-                    endTime = '12:00:00';
-                  } else if (req.leave_period === 'half-afternoon') {
-                    startTime = '13:00:00';
-                    endTime = '17:00:00';
-                  } else {
-                    // Default full day
-                    startTime = '09:00:00';
-                    endTime = '17:00:00';
-                  }
-
-                  eventsForRequest.push({
-                    id: `leave-${req.request_id}`,
-                    title: `${req.staff_details?.staff_name || req.staff_cardid} - ${req.leave_types?.leave_name || 'Leave'}`,
-                    start: `${startDateStr}T${startTime}`,
-                    end: `${startDateStr}T${endTime}`,
-                    allDay: false,
-                    backgroundColor: color,
-                    borderColor: color,
-                    extendedProps: {
-                      staffName: req.staff_details?.staff_name || req.staff_cardid,
-                      leaveType: req.leave_types?.leave_name,
-                      reason: req.reason,
-                      status: req.status,
-                      leavePeriod: req.leave_period,
-                      requestId: req.request_id,
-                      eventType: 'leave',
-                    },
-                  });
-                }
-
-                return eventsForRequest;
-              })
-              .flat()
-          );
-        } else {
-          console.error('Failed to fetch leave requests:', res.data.message);
-        }
-      } catch (err) {
-        console.error('Error fetching leave requests:', err);
-      }
-    };
-
-    const fetchHolidays = async () => {
-      try {
-        const res = await axios.get(`${config.apiBaseUrl}/calendars`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (res.data) {
-          const holidayEvents = res.data.map((holiday) => ({
-            id: `holiday-${holiday.id}`,
-            title: ` ${holiday.holiday_name}`,
-            start: holiday.calendar_date.split('T')[0], // Use only the date part to avoid timezone issues
-            allDay: true,
-            backgroundColor: '#9c27b0',
-            borderColor: '#7b1fa2',
-            textColor: '#ffffff',
-            extendedProps: {
-              holidayName: holiday.holiday_name,
-              isHoliday: holiday.is_holiday,
-              isWeekend: holiday.is_weekend,
-              dayName: holiday.day_name,
-              eventType: 'holiday',
-            },
-          }));
-
-          // Merge holidays with leave events
-          setEventDetails((prevEvents) => {
-            const leaveEvents = prevEvents?.filter((event) => event.extendedProps?.eventType === 'leave') || [];
-            return [...leaveEvents, ...holidayEvents];
-          });
-        }
-      } catch (err) {
-        console.error('Error fetching holidays:', err);
-      }
-    };
-
-    fetchLeaveRequests();
-    fetchHolidays();
+    // Use the centralized refresh function for initial load
+    refreshCalendarData();
   }, []);
+
+  // Function to refresh calendar data after creating/updating holidays
+  const refreshCalendarData = useCallback(async (retryCount = 0) => {
+    // Prevent multiple simultaneous API calls
+    if (isLoadingCalendarData) {
+      console.log('Calendar data is already being loaded, skipping...');
+      return;
+    }
+
+    setIsLoadingCalendarData(true);
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    
+    try {
+      console.log('Starting calendar data refresh...');
+      
+      // Fetch both holidays and leave requests in parallel
+      const [holidaysRes, leaveRes] = await Promise.all([
+        axios.get(`${config.apiBaseUrl}/calendars`, {
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 10000 // 10 second timeout
+        }),
+        axios.get(`${config.apiBaseUrl}/leave_requests/all_leave_requests`, {
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 10000 // 10 second timeout
+        })
+      ]);
+      
+      console.log('API responses received - Holidays:', holidaysRes.data);
+      console.log('API responses received - Leave:', leaveRes.data);
+
+      const allEvents = [];
+
+      // Process holidays
+      if (holidaysRes.data && Array.isArray(holidaysRes.data)) {
+        const holidayEvents = holidaysRes.data.map((holiday) => ({
+          id: `holiday-${holiday.id}`,
+          title: `🎊 ${holiday.holiday_name}`,
+          start: holiday.calendar_date.split('T')[0],
+          allDay: true,
+          backgroundColor: '#9c27b0',
+          borderColor: '#7b1fa2',
+          textColor: '#ffffff',
+          extendedProps: {
+            holidayName: holiday.holiday_name,
+            isHoliday: holiday.is_holiday,
+            isWeekend: holiday.is_weekend,
+            dayName: holiday.day_name,
+            eventType: 'holiday',
+          },
+        }));
+        allEvents.push(...holidayEvents);
+        console.log('Processed holiday events:', holidayEvents);
+      } else {
+        console.warn('No holiday data received or data is not an array:', holidaysRes.data);
+      }
+
+      // Process leave requests
+      if (leaveRes.data && Array.isArray(leaveRes.data)) {
+        const leaveEvents = leaveRes.data
+          .map((req) => {
+            // Determine event color based on status
+            let color = '#099ce5'; // default
+            if (req.status === 'Approved') color = '#4caf50';
+            else if (req.status === 'Denied') color = '#f44336';
+            else if (req.status === 'Pending') color = '#ff9800';
+
+            const eventsForRequest = [];
+            const startDateStr = req.start_date.split('T')[0];
+            const endDateStr = req.end_date.split('T')[0];
+
+            // Calculate the end date for FullCalendar
+            const endDateParts = endDateStr.split('-');
+            const calendarEndDate = new Date(endDateParts[0], endDateParts[1] - 1, parseInt(endDateParts[2]) + 1);
+            const calendarEndDateStr = `${calendarEndDate.getFullYear()}-${String(calendarEndDate.getMonth() + 1).padStart(2, '0')}-${String(calendarEndDate.getDate()).padStart(2, '0')}`;
+
+            const isMultiDay = startDateStr !== endDateStr;
+
+            if (isMultiDay || req.leave_period === 'full-day' || req.leave_period === 'full') {
+              eventsForRequest.push({
+                id: `leave-${req.request_id}`,
+                title: `${req.staff_details?.staff_name || req.staff_cardid} - ${req.leave_types?.leave_name || 'Leave'}`,
+                start: startDateStr,
+                end: calendarEndDateStr,
+                allDay: true,
+                backgroundColor: color,
+                borderColor: color,
+                extendedProps: {
+                  staffName: req.staff_details?.staff_name || req.staff_cardid,
+                  leaveType: req.leave_types?.leave_name,
+                  reason: req.reason,
+                  status: req.status,
+                  leavePeriod: req.leave_period,
+                  requestId: req.request_id,
+                  eventType: 'leave',
+                },
+              });
+            } else {
+              // For half-day leave
+              let startTime, endTime;
+              if (req.leave_period === 'half-morning') {
+                startTime = '09:00:00';
+                endTime = '12:00:00';
+              } else if (req.leave_period === 'half-afternoon') {
+                startTime = '13:00:00';
+                endTime = '17:00:00';
+              } else {
+                startTime = '09:00:00';
+                endTime = '17:00:00';
+              }
+
+              eventsForRequest.push({
+                id: `leave-${req.request_id}`,
+                title: `${req.staff_details?.staff_name || req.staff_cardid} - ${req.leave_types?.leave_name || 'Leave'}`,
+                start: `${startDateStr}T${startTime}`,
+                end: `${startDateStr}T${endTime}`,
+                allDay: false,
+                backgroundColor: color,
+                borderColor: color,
+                extendedProps: {
+                  staffName: req.staff_details?.staff_name || req.staff_cardid,
+                  leaveType: req.leave_types?.leave_name,
+                  reason: req.reason,
+                  status: req.status,
+                  leavePeriod: req.leave_period,
+                  requestId: req.request_id,
+                  eventType: 'leave',
+                },
+              });
+            }
+
+            return eventsForRequest;
+          })
+          .flat();
+        allEvents.push(...leaveEvents);
+        console.log('Processed leave events:', leaveEvents);
+      } else {
+        console.warn('No leave data received or data is not an array:', leaveRes.data);
+      }
+
+      console.log('Final combined events:', allEvents);
+
+      // Update both state variables with the complete event list
+      setAllEvents(allEvents);
+      setEventDetails(allEvents);
+      
+      console.log('Calendar data refresh completed successfully');
+      
+    } catch (err) {
+      console.error('Error refreshing calendar data:', err);
+      
+      // Retry mechanism for network errors
+      if (retryCount < 2 && (err.code === 'NETWORK_ERROR' || err.message.includes('timeout'))) {
+        console.log(`Retrying calendar data refresh... Attempt ${retryCount + 1}/3`);
+        setTimeout(() => {
+          refreshCalendarData(retryCount + 1);
+        }, 1000 * (retryCount + 1)); // Exponential backoff
+      } else {
+        console.error('Failed to refresh calendar data after retries');
+      }
+    } finally {
+      setIsLoadingCalendarData(false);
+    }
+  }, [isLoadingCalendarData]);
 
   const handleCRUDClose = () => {
     setShowCRUDLeaveCalendar(false);
@@ -284,8 +334,8 @@ export default function Calendar() {
           setIsHoliday(false);
           setIsWeekend(false);
 
-          // Refresh calendar data
-          window.location.reload();
+          // Refresh calendar data instead of full page reload
+          await refreshCalendarData();
           return;
         } else {
           setError('ไม่สามารถแก้ไขวันหยุดได้: ' + res.data.message);
@@ -378,6 +428,9 @@ export default function Calendar() {
       setSelectedDate('');
       setIsHoliday(false);
       setIsWeekend(false);
+
+      // Refresh calendar data to show new holiday
+      await refreshCalendarData();
     } catch (error) {
       console.error('Error creating holiday request:', error);
       setError('Error creating holiday request: ' + (error.response?.data?.message || error.message));
@@ -391,6 +444,172 @@ export default function Calendar() {
 
   const handleCloseErrorModal = () => {
     setShowErrorModal(false);
+  };
+
+  // Custom static ranges for Thai locale
+  const customStaticRanges = [
+    {
+      label: 'วันนี้',
+      range: () => ({
+        startDate: new Date(),
+        endDate: new Date()
+      }),
+      isSelected(range) {
+        const definedRange = this.range();
+        return (
+          range.startDate.toDateString() === definedRange.startDate.toDateString() &&
+          range.endDate.toDateString() === definedRange.endDate.toDateString()
+        );
+      }
+    },
+    {
+      label: 'เมื่อวาน',
+      range: () => {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        return {
+          startDate: yesterday,
+          endDate: yesterday
+        };
+      },
+      isSelected(range) {
+        const definedRange = this.range();
+        return (
+          range.startDate.toDateString() === definedRange.startDate.toDateString() &&
+          range.endDate.toDateString() === definedRange.endDate.toDateString()
+        );
+      }
+    },
+    {
+      label: 'สัปดาห์นี้',
+      range: () => {
+        const now = new Date();
+        const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
+        const endOfWeek = new Date(now.setDate(now.getDate() - now.getDay() + 6));
+        return {
+          startDate: startOfWeek,
+          endDate: endOfWeek
+        };
+      },
+      isSelected(range) {
+        const definedRange = this.range();
+        return (
+          range.startDate.toDateString() === definedRange.startDate.toDateString() &&
+          range.endDate.toDateString() === definedRange.endDate.toDateString()
+        );
+      }
+    },
+    {
+      label: 'สัปดาห์ที่แล้ว',
+      range: () => {
+        const now = new Date();
+        const startOfLastWeek = new Date(now.setDate(now.getDate() - now.getDay() - 7));
+        const endOfLastWeek = new Date(now.setDate(now.getDate() - now.getDay() - 1));
+        return {
+          startDate: startOfLastWeek,
+          endDate: endOfLastWeek
+        };
+      },
+      isSelected(range) {
+        const definedRange = this.range();
+        return (
+          range.startDate.toDateString() === definedRange.startDate.toDateString() &&
+          range.endDate.toDateString() === definedRange.endDate.toDateString()
+        );
+      }
+    },
+    {
+      label: 'เดือนนี้',
+      range: () => {
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        return {
+          startDate: startOfMonth,
+          endDate: endOfMonth
+        };
+      },
+      isSelected(range) {
+        const definedRange = this.range();
+        return (
+          range.startDate.toDateString() === definedRange.startDate.toDateString() &&
+          range.endDate.toDateString() === definedRange.endDate.toDateString()
+        );
+      }
+    },
+    {
+      label: 'เดือนที่แล้ว',
+      range: () => {
+        const now = new Date();
+        const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+        return {
+          startDate: startOfLastMonth,
+          endDate: endOfLastMonth
+        };
+      },
+      isSelected(range) {
+        const definedRange = this.range();
+        return (
+          range.startDate.toDateString() === definedRange.startDate.toDateString() &&
+          range.endDate.toDateString() === definedRange.endDate.toDateString()
+        );
+      }
+    }
+  ];
+
+  // Date range filtering functions
+  const handleDateRangeChange = (ranges) => {
+    setDateRange([ranges.selection]);
+    if (isDateRangeActive) {
+      filterEventsByDateRange(ranges.selection);
+    }
+  };
+
+  const filterEventsByDateRange = (range) => {
+    if (!allEvents || !range) return;
+
+    const {startDate, endDate} = range;
+    
+    // If start date is after end date, don't filter
+    if (startDate > endDate) {
+      setEventDetails(allEvents);
+      return;
+    }
+
+    const filteredEvents = allEvents.filter(event => {
+      const eventStart = new Date(event.start);
+      const eventEnd = event.end ? new Date(event.end) : eventStart;
+      
+      // Check if event overlaps with selected date range
+      return (eventStart <= endDate && eventEnd >= startDate);
+    });
+
+    setEventDetails(filteredEvents);
+  };
+
+  const toggleDateRangeFilter = () => {
+    setShowDateRangeFilter(!showDateRangeFilter);
+    if (!showDateRangeFilter) {
+      // Reset to show all events when closing
+      setIsDateRangeActive(false);
+      setEventDetails(allEvents);
+    }
+  };
+
+  const applyDateRangeFilter = () => {
+    setIsDateRangeActive(true);
+    filterEventsByDateRange(dateRange[0]);
+  };
+
+  const clearDateRangeFilter = () => {
+    setIsDateRangeActive(false);
+    setEventDetails(allEvents);
+    setDateRange([{
+      startDate: new Date(),
+      endDate: new Date(),
+      key: 'selection'
+    }]);
   };
 
   // FullCalendar event handlers
@@ -464,23 +683,9 @@ export default function Calendar() {
         ...selectedEvent,
         id: selectedEvent.id || `holiday-${selectedEvent.holidayId}`, // Use stored ID or construct from holidayId
       });
-      setHolidayName(selectedEvent.holidayName);
-      setIsHoliday(selectedEvent.isHoliday);
-      setIsWeekend(selectedEvent.isWeekend);
-
-      // Format the date properly for the date input
-      const dateStr =
-        selectedEvent.start instanceof Date
-          ? selectedEvent.start.toISOString().split('T')[0]
-          : selectedEvent.start.split('T')[0];
-
-      console.log('Date string for API:', dateStr);
-
-      setStartDate(dateStr);
-      setEndDate(dateStr); // For single day holidays
-      setSelectedDate(dateStr); // Also set selectedDate for the form
+      
       setDialogOpen(false);
-      setShowCRUDLeaveCalendar(true);
+      setShowNewHolidayDialog(true);
     }
   };
 
@@ -505,8 +710,8 @@ export default function Calendar() {
       setDialogOpen(false);
       setHolidayToDelete(null);
 
-      // Refresh calendar data
-      window.location.reload();
+      // Refresh calendar data instead of full page reload
+      await refreshCalendarData();
     } catch (error) {
       setError('ไม่สามารถลบวันหยุดได้ กรุณาลองใหม่อีกครั้ง');
       setShowErrorModal(true);
@@ -517,6 +722,21 @@ export default function Calendar() {
   const cancelDeleteHoliday = () => {
     setConfirmDeleteOpen(false);
     setHolidayToDelete(null);
+  };
+
+  // New holiday dialog handlers
+  const handleHolidaySuccess = async (message) => {
+    setSuccess(message);
+    setShowSuccessModal(true);
+    setShowNewHolidayDialog(false);
+    setEditingHoliday(null);
+    // Refresh calendar data instead of full page reload
+    await refreshCalendarData();
+  };
+
+  const handleHolidayError = (message) => {
+    setError(message);
+    setShowErrorModal(true);
   };
 
   // Thai locale configuration
@@ -671,6 +891,176 @@ export default function Calendar() {
             </Box>
           </Box>
 
+          {/* Date Range Filter Section */}
+          <Box
+            sx={{
+              mb: 3,
+              p: 2,
+              backgroundColor: 'rgba(255,255,255,0.7)',
+              borderRadius: 2,
+              border: '1px solid #e0e0e0',
+            }}
+          >
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: {xs: 'column', sm: 'row'},
+                alignItems: {xs: 'stretch', sm: 'center'},
+                justifyContent: 'space-between',
+                gap: 2,
+                mb: showDateRangeFilter ? 2 : 0,
+              }}
+            >
+              <Typography
+                variant='h6'
+                sx={{
+                  color: '#2c3e50',
+                  fontWeight: 'bold',
+                  fontSize: {xs: '1rem', sm: '1.25rem'},
+                }}
+              >
+                🗓️ กรองช่วงวันที่
+              </Typography>
+              
+              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                <Button
+                  variant={showDateRangeFilter ? 'contained' : 'outlined'}
+                  onClick={toggleDateRangeFilter}
+                  size={isMobile ? 'small' : 'medium'}
+                  sx={{
+                    borderRadius: 2,
+                    minWidth: 'auto',
+                    px: {xs: 2, sm: 3},
+                  }}
+                >
+                  <FilterList sx={{ mr: 0.5, fontSize: {xs: '1rem', sm: '1.25rem'} }} />
+                  {showDateRangeFilter ? 'ซ่อน' : 'เลือกช่วงวันที่'}
+                </Button>
+                
+                {isDateRangeActive && (
+                  <Button
+                    variant='outlined'
+                    color='secondary'
+                    onClick={clearDateRangeFilter}
+                    size={isMobile ? 'small' : 'medium'}
+                    sx={{ borderRadius: 2 }}
+                  >
+                    ล้างตัวกรอง
+                  </Button>
+                )}
+              </Box>
+            </Box>
+
+            <Collapse in={showDateRangeFilter}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 2,
+                }}
+              >
+                <Paper
+                  elevation={2}
+                  sx={{
+                    p: 1,
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: {xs: 'column', md: 'row'},
+                    '& .rdrCalendarWrapper': {
+                      fontSize: {xs: '0.8rem', sm: '1rem'},
+                      color: '#2c3e50 !important',
+                    },
+                    '& .rdrDefinedRangesWrapper': {
+                      border: 'none !important',
+                      borderRight: {xs: 'none', md: '1px solid #e0e0e0 !important'},
+                      borderBottom: {xs: '1px solid #e0e0e0 !important', md: 'none'},
+                      width: {xs: '100%', md: '200px'},
+                      backgroundColor: '#f8f9fa !important',
+                    },
+                    '& .rdrStaticRange': {
+                      padding: '8px 12px !important',
+                      borderBottom: '1px solid #e0e0e0 !important',
+                      '&:hover': {
+                        backgroundColor: '#e3f2fd !important',
+                      },
+                    },
+                    '& .rdrStaticRangeSelected': {
+                      backgroundColor: '#1976d2 !important',
+                      color: '#fff !important',
+                    },
+                    '& .rdrCalendarWrapper .rdrMonth': {
+                      margin: '0 !important',
+                    },
+                    '& .rdrDateRangeWrapper': {
+                      '& .rdrDateInput': {
+                        backgroundColor: '#f5f5f5',
+                      },
+                    },
+                  }}
+                >
+                  <Box sx={{ width: '100%', display: 'flex', flexDirection: {xs: 'column', md: 'row'} }}>
+                    <DateRange
+                      ranges={dateRange}
+                      onChange={handleDateRangeChange}
+                      months={isMobile ? 1 : 2}
+                      direction={isMobile ? 'vertical' : 'horizontal'}
+                      showSelectionPreview={true}
+                      moveRangeOnFirstSelection={false}
+                      editableDateInputs={true}
+                      showDateDisplay={false}
+                    />
+                  </Box>
+                </Paper>
+                
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'center' }}>
+                  <Button
+                    variant='contained'
+                    color='primary'
+                    onClick={applyDateRangeFilter}
+                    size={isMobile ? 'small' : 'medium'}
+                    sx={{ borderRadius: 2 }}
+                    disabled={
+                      !dateRange[0].startDate || 
+                      !dateRange[0].endDate || 
+                      dateRange[0].startDate.toDateString() === dateRange[0].endDate.toDateString()
+                    }
+                  >
+                    ใช้ตัวกรอง
+                  </Button>
+                  
+                  {isDateRangeActive && (
+                    <Button
+                      variant='outlined'
+                      color='secondary'
+                      onClick={clearDateRangeFilter}
+                      size={isMobile ? 'small' : 'medium'}
+                      sx={{ borderRadius: 2 }}
+                    >
+                      ล้างตัวกรอง
+                    </Button>
+                  )}
+                  
+                  {isDateRangeActive && dateRange[0].startDate && dateRange[0].endDate && (
+                    <Chip
+                      label={
+                        `${dateRange[0].startDate.toLocaleDateString('th-TH')} - ` +
+                        `${dateRange[0].endDate.toLocaleDateString('th-TH')}`
+                      }
+                      color='primary'
+                      variant='outlined'
+                      sx={{ 
+                        fontSize: {xs: '0.75rem', sm: '0.875rem'},
+                        maxWidth: {xs: '250px', sm: 'none'},
+                      }}
+                    />
+                  )}
+                </Box>
+              </Box>
+            </Collapse>
+          </Box>
+
           {user && ['Manager', 'operator', 'Developer'].includes(user.role) && (
             <Button
               variant='contained'
@@ -687,7 +1077,7 @@ export default function Calendar() {
                   transform: 'translateY(-1px)',
                 },
               }}
-              onClick={() => setShowCRUDLeaveCalendar(true)}
+              onClick={() => setShowNewHolidayDialog(true)}
             >
               ➕ เพิ่ม / แก้ไข วันหยุด
             </Button>
@@ -1366,6 +1756,19 @@ export default function Calendar() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* New Holiday Dialog with Date Range Picker */}
+      <HolidayDialog
+        open={showNewHolidayDialog}
+        onClose={() => {
+          setShowNewHolidayDialog(false);
+          setEditingHoliday(null);
+        }}
+        onSuccess={handleHolidaySuccess}
+        onError={handleHolidayError}
+        editingHoliday={editingHoliday}
+        user={user}
+      />
 
       <SuccessModal show={showSuccessModal} handleClose={handleCloseSuccessModal} message={success} />
       <ErrorModal show={showErrorModal} handleClose={handleCloseErrorModal} message={error} />

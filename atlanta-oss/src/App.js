@@ -81,6 +81,7 @@ function App() {
       );
       return JSON.parse(jsonPayload);
     } catch (e) {
+      console.error("Invalid token format", e);
       return null;
     }
   };
