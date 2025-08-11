@@ -298,3 +298,84 @@
 .loading-calendar {
   animation: pulse 2s infinite;
 }
+
+/* React Date Range Custom Styles */
+.rdrCalendarWrapper {
+  color: #2c3e50 !important;
+  font-family: inherit !important;
+}
+
+.rdrMonth .rdrWeekDays {
+  background-color: #f8f9fa !important;
+}
+
+.rdrDayNumber {
+  color: #2c3e50 !important;
+}
+
+.rdrDayToday .rdrDayNumber:after {
+  background: #3f51b5 !important;
+}
+
+.rdrDay:not(.rdrDayPassive) .rdrInRange ~ .rdrDayNumber,
+.rdrDay:not(.rdrDayPassive) .rdrStartEdge ~ .rdrDayNumber,
+.rdrDay:not(.rdrDayPassive) .rdrEndEdge ~ .rdrDayNumber {
+  color: #fff !important;
+}
+
+.rdrDayStartEdge,
+.rdrDayEndEdge,
+.rdrDayInRange {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+.rdrDayHovered {
+  background: rgba(102, 126, 234, 0.2) !important;
+}
+
+.rdrMonthAndYearWrapper {
+  background-color: #f8f9fa !important;
+  border-bottom: 1px solid #e0e0e0 !important;
+}
+
+.rdrMonthAndYearPickers {
+  color: #2c3e50 !important;
+}
+
+.rdrNextPrevButton {
+  background-color: #fff !important;
+  border: 1px solid #e0e0e0 !important;
+  color: #2c3e50 !important;
+}
+
+.rdrNextPrevButton:hover {
+  background-color: #f5f5f5 !important;
+}
+
+.rdrDateDisplayWrapper {
+  background-color: #f8f9fa !important;
+  border: 1px solid #e0e0e0 !important;
+}
+
+.rdrDateInput {
+  color: #2c3e50 !important;
+}
+
+/* Mobile adjustments for react-date-range */
+@media (max-width: 768px) {
+  .rdrCalendarWrapper {
+    font-size: 14px !important;
+  }
+  
+  .rdrMonth {
+    width: 100% !important;
+  }
+  
+  .rdrDateDisplayWrapper {
+    margin: 10px 0 !important;
+  }
+  
+  .rdrDay {
+    height: 36px !important;
+  }
+}
