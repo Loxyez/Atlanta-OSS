@@ -12,24 +12,32 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Box,
 } from '@mui/material';
-import {DatePicker} from '@mui/x-date-pickers';
-import {AdapterDateFns} from '@mui/x-date-pickers/AdapterDateFnsV3';
-import {LocalizationProvider} from '@mui/x-date-pickers';
 import CustomNavbar from '../navigation-bar/navbar';
 import SuccessModal from '../Modal/SuccessModal';
 import ErrorModal from '../Modal/ErrorModel';
 import {jwtDecode} from 'jwt-decode';
 import config from '../../utils/config';
 import {formatDateForAPI} from '../../utils/dateUtils';
+import {DateRange} from 'react-date-range';
+import {format} from 'date-fns';
+import {th} from 'date-fns/locale';
+import 'react-date-range/dist/styles.css';
+import 'react-date-range/dist/theme/default.css';
 
 export default function LeaveRequest() {
   const [leaveTypes, setLeaveTypes] = useState([]);
   const [selectedLeave, setSelectedLeave] = useState('');
   const [leavePeriod, setLeavePeriod] = useState('full');
   const [leaveBalance, setLeaveBalance] = useState([]);
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
+  const [dateRange, setDateRange] = useState([
+    {
+      startDate: new Date(),
+      endDate: new Date(),
+      key: 'selection'
+    }
+  ]);
   const [reason, setReason] = useState('');
   const [user, setUser] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -90,8 +98,8 @@ export default function LeaveRequest() {
       staff_cardid: user.staff_cardid,
       leave_type_id: selectedLeave,
       leave_period: leavePeriod,
-      start_date: formatDateForAPI(startDate),
-      end_date: formatDateForAPI(endDate),
+      start_date: formatDateForAPI(dateRange[0].startDate),
+      end_date: formatDateForAPI(dateRange[0].endDate),
       reason,
     };
 
@@ -106,8 +114,13 @@ export default function LeaveRequest() {
         setSuccess('ยื่นคำร้องขอวันลาเสร็จเรียบร้อย ระบบจะทำการตรวจสอบ 1-2 วัน');
         setSelectedLeave('');
         setLeavePeriod('full');
-        setStartDate(null);
-        setEndDate(null);
+        setDateRange([
+          {
+            startDate: new Date(),
+            endDate: new Date(),
+            key: 'selection'
+          }
+        ]);
         setReason('');
         setShowSuccessModal(true);
       } else {
@@ -127,6 +140,83 @@ export default function LeaveRequest() {
   const handleCloseErrorModal = () => {
     setShowErrorModal(false);
   };
+
+  // Thai static ranges for date picker
+  const staticRanges = [
+    {
+      label: 'วันนี้',
+      range: () => ({
+        startDate: new Date(),
+        endDate: new Date()
+      }),
+      isSelected(range) {
+        const definedRange = this.range();
+        return (
+          format(range.startDate, 'yyyy-MM-dd') === format(definedRange.startDate, 'yyyy-MM-dd') &&
+          format(range.endDate, 'yyyy-MM-dd') === format(definedRange.endDate, 'yyyy-MM-dd')
+        );
+      }
+    },
+    {
+      label: 'เมื่อวาน',
+      range: () => {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        return {
+          startDate: yesterday,
+          endDate: yesterday
+        };
+      },
+      isSelected(range) {
+        const definedRange = this.range();
+        return (
+          format(range.startDate, 'yyyy-MM-dd') === format(definedRange.startDate, 'yyyy-MM-dd') &&
+          format(range.endDate, 'yyyy-MM-dd') === format(definedRange.endDate, 'yyyy-MM-dd')
+        );
+      }
+    },
+    {
+      label: 'สัปดาห์นี้',
+      range: () => {
+        const start = new Date();
+        const day = start.getDay();
+        const diff = start.getDate() - day + (day === 0 ? -6 : 1);
+        const startOfWeek = new Date(start.setDate(diff));
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(startOfWeek.getDate() + 6);
+        return {
+          startDate: startOfWeek,
+          endDate: endOfWeek
+        };
+      },
+      isSelected(range) {
+        const definedRange = this.range();
+        return (
+          format(range.startDate, 'yyyy-MM-dd') === format(definedRange.startDate, 'yyyy-MM-dd') &&
+          format(range.endDate, 'yyyy-MM-dd') === format(definedRange.endDate, 'yyyy-MM-dd')
+        );
+      }
+    },
+    {
+      label: 'เดือนนี้',
+      range: () => {
+        const now = new Date();
+        const start = new Date(now.getFullYear(), now.getMonth(), 1);
+        const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        return {
+          startDate: start,
+          endDate: end
+        };
+      },
+      isSelected(range) {
+        const definedRange = this.range();
+        return (
+          format(range.startDate, 'yyyy-MM-dd') === format(definedRange.startDate, 'yyyy-MM-dd') &&
+          format(range.endDate, 'yyyy-MM-dd') === format(definedRange.endDate, 'yyyy-MM-dd')
+        );
+      }
+    }
+  ];
 
   return (
     <div>
@@ -183,26 +273,81 @@ export default function LeaveRequest() {
                 </TextField>
               </Grid>
 
-              <Grid item xs={12} sm={6}>
-                <LocalizationProvider dateAdapter={AdapterDateFns}>
-                  <DatePicker
-                    label='วันที่เริ่มต้น'
-                    value={startDate}
-                    onChange={(newValue) => setStartDate(newValue)}
-                    renderInput={(params) => <TextField {...params} fullWidth />}
-                  />
-                </LocalizationProvider>
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <LocalizationProvider dateAdapter={AdapterDateFns}>
-                  <DatePicker
-                    label='วันที่สิ้นสุด'
-                    value={endDate}
-                    onChange={(newValue) => setEndDate(newValue)}
-                    renderInput={(params) => <TextField {...params} fullWidth />}
-                  />
-                </LocalizationProvider>
+              <Grid item xs={12}>
+                <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 'bold' }}>
+                  เลือกช่วงวันที่ลา
+                </Typography>
+                <Box sx={{ 
+                  width: '100%',
+                  overflow: 'hidden',
+                  display: 'flex',
+                  justifyContent: 'center'
+                }}>
+                  <Paper 
+                    elevation={2} 
+                    sx={{ 
+                      borderRadius: 2,
+                      overflow: 'hidden',
+                      border: '1px solid #e0e0e0',
+                      width: '100%',
+                      maxWidth: '800px',
+                      '& .rdrCalendarWrapper': {
+                        fontSize: '12px',
+                        width: '100%'
+                      },
+                      '& .rdrDateRangeWrapper': {
+                        display: 'flex',
+                        flexDirection: 'column',
+                        width: '100%'
+                      },
+                      '& .rdrDefinedRangesWrapper': {
+                        borderRight: 'none',
+                        borderBottom: '1px solid #e5e5e5',
+                        width: '100%',
+                        minHeight: 'auto',
+                        '& .rdrStaticRangeLabel': {
+                          fontSize: '12px'
+                        }
+                      },
+                      '& .rdrCalendar': {
+                        width: '100%'
+                      },
+                      '& .rdrMonth': {
+                        padding: '5px',
+                        width: '100%'
+                      },
+                      '& .rdrMonthAndYearWrapper': {
+                        fontSize: '14px'
+                      },
+                      '& .rdrDateDisplayWrapper': {
+                        backgroundColor: '#f5f5f5',
+                        padding: '10px'
+                      }
+                    }}
+                  >
+                    <DateRange
+                      ranges={dateRange}
+                      onChange={(ranges) => setDateRange([ranges.selection])}
+                      locale={th}
+                      staticRanges={staticRanges}
+                      inputRanges={[]}
+                      showSelectionPreview={true}
+                      moveRangeOnFirstSelection={false}
+                      editableDateInputs={true}
+                      direction="vertical"
+                      calendarFocus="forwards"
+                      months={1}
+                      showDateDisplay={true}
+                      showMonthAndYearPickers={true}
+                      rangeColors={['#1976d2']}
+                    />
+                  </Paper>
+                </Box>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1, textAlign: 'center' }}>
+                  วันที่เริ่มต้น: {format(dateRange[0].startDate, 'dd/MM/yyyy', { locale: th })}
+                  {' - '}
+                  วันที่สิ้นสุด: {format(dateRange[0].endDate, 'dd/MM/yyyy', { locale: th })}
+                </Typography>
               </Grid>
 
               <Grid item xs={12}>
