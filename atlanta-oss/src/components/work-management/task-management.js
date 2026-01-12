@@ -237,7 +237,7 @@ export default function TaskManagement() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {tasks.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((task) => (
+                {Array.isArray(tasks) ? tasks.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((task) => (
                   <TableRow key={task.taskid}>
                     <TableCell>{getMemberName(task.memberid)}</TableCell>
                     <TableCell>{getStaffName(task.staff_cardid)}</TableCell>
@@ -279,7 +279,6 @@ export default function TaskManagement() {
                       )}
                     </TableCell>
                     <TableCell>{task.task_device_detail}</TableCell>
-                    {/* Map status with color */}
                     <TableCell>
                       <Chip
                         label={taskStatusMapping[task.task_status]}
@@ -287,10 +286,10 @@ export default function TaskManagement() {
                           task.task_status === 'Pending'
                             ? 'default'
                             : task.task_status === 'In-progress'
-                              ? 'warning'
-                              : task.task_status === 'Completed'
-                                ? 'success'
-                                : 'error'
+                            ? 'warning'
+                            : task.task_status === 'Completed'
+                            ? 'success'
+                            : 'error'
                         }
                       />
                     </TableCell>
@@ -308,7 +307,6 @@ export default function TaskManagement() {
                             แก้ไข
                           </Button>
                         </Grid>
-                        {/* Button for print ออกใบรับซ่อม */}
                         <Grid item>
                           <Button
                             variant='contained'
@@ -334,7 +332,7 @@ export default function TaskManagement() {
                       </Grid>
                     </TableCell>
                   </TableRow>
-                ))}
+                )) : null}
               </TableBody>
             </Table>
             <TablePagination

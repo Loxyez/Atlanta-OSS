@@ -194,15 +194,15 @@ export default function Calendar() {
             if (isMultiDay || req.leave_period === 'full-day' || req.leave_period === 'full') {
               eventsForRequest.push({
                 id: `leave-${req.request_id}`,
-                title: `${req.staff_details?.staff_name || req.staff_cardid} - ${req.leave_types?.leave_name || 'Leave'}`,
+                title: `${req.staff_name || req.staff_cardid} - ${req.leave_name || 'Leave'}`,
                 start: startDateStr,
                 end: calendarEndDateStr,
                 allDay: true,
                 backgroundColor: color,
                 borderColor: color,
                 extendedProps: {
-                  staffName: req.staff_details?.staff_name || req.staff_cardid,
-                  leaveType: req.leave_types?.leave_name,
+                  staffName: req.staff_name || req.staff_cardid,
+                  leaveType: req.leave_name,
                   reason: req.reason,
                   status: req.status,
                   leavePeriod: req.leave_period,
@@ -226,15 +226,15 @@ export default function Calendar() {
 
               eventsForRequest.push({
                 id: `leave-${req.request_id}`,
-                title: `${req.staff_details?.staff_name || req.staff_cardid} - ${req.leave_types?.leave_name || 'Leave'}`,
+                title: `${req.staff_name || req.staff_cardid} - ${req.leave_name || 'Leave'}`,
                 start: `${startDateStr}T${startTime}`,
                 end: `${startDateStr}T${endTime}`,
                 allDay: false,
                 backgroundColor: color,
                 borderColor: color,
                 extendedProps: {
-                  staffName: req.staff_details?.staff_name || req.staff_cardid,
-                  leaveType: req.leave_types?.leave_name,
+                  staffName: req.staff_name || req.staff_cardid,
+                  leaveType: req.leave_name,
                   reason: req.reason,
                   status: req.status,
                   leavePeriod: req.leave_period,
