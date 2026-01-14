@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Table,
   TableBody,
@@ -23,15 +23,15 @@ import {
   MenuItem,
   Chip,
 } from '@mui/material';
-import {Edit, Delete, Image, Visibility, Print} from '@mui/icons-material';
-import {Autocomplete} from '@mui/material';
+import { Edit, Delete, Image, Visibility, Print } from '@mui/icons-material';
+import { Autocomplete } from '@mui/material';
 import axios from 'axios';
 import config from '../../utils/config';
-import {Container} from 'react-bootstrap';
+import { Container } from 'react-bootstrap';
 import CustomNavbar from '../navigation-bar/navbar';
 import RepairReceiptPdf from './PDF/RepairReceiptPdf';
-import {pdf} from '@react-pdf/renderer';
-import {saveAs} from 'file-saver';
+import { pdf } from '@react-pdf/renderer';
+import { saveAs } from 'file-saver';
 
 export default function TaskManagement() {
   const [tasks, setTasks] = useState([]);
@@ -75,7 +75,7 @@ export default function TaskManagement() {
     setLoading(true);
     try {
       const response = await axios.get(`${config.apiBaseUrl}/tasks/get_all_tasks`, {
-        headers: {Authorization: `Bearer ${token}`},
+        headers: { Authorization: `Bearer ${token}` },
       });
       setTasks(response.data);
       // Sort tasks by taskid in ascending order
@@ -92,7 +92,7 @@ export default function TaskManagement() {
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     try {
       const res = await axios.get(`${config.apiBaseUrl}/members/get_all_members`, {
-        headers: {Authorization: `Bearer ${token}`},
+        headers: { Authorization: `Bearer ${token}` },
       });
       setMembers(res.data);
     } catch (error) {
@@ -104,7 +104,7 @@ export default function TaskManagement() {
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     try {
       const res = await axios.get(`${config.apiBaseUrl}/staffs/get_staff_cardids`, {
-        headers: {Authorization: `Bearer ${token}`},
+        headers: { Authorization: `Bearer ${token}` },
       });
       setStaffDetails(res.data);
     } catch (error) {
@@ -114,7 +114,7 @@ export default function TaskManagement() {
 
   const handleEdit = (task) => {
     setSelectedTask(task);
-    setEditedTask({...task}); // ตั้งค่าเริ่มต้นของฟอร์มแก้ไข
+    setEditedTask({ ...task }); // ตั้งค่าเริ่มต้นของฟอร์มแก้ไข
     setOpenEditDialog(true);
   };
 
@@ -127,7 +127,7 @@ export default function TaskManagement() {
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     try {
       await axios.delete(`${config.apiBaseUrl}/tasks/delete_task/${selectedTask.taskid}`, {
-        headers: {Authorization: `Bearer ${token}`},
+        headers: { Authorization: `Bearer ${token}` },
       });
       fetchTasks();
       setOpenDeleteDialog(false);
@@ -170,7 +170,7 @@ export default function TaskManagement() {
   };
 
   const handleOpenImageDialog = (imageUrl) => {
-    setImageToShow(imageUrl);
+    setImageToShow(`${config.apiBaseUrl}${imageUrl}`);
     setOpenImageDialog(true);
   };
 
@@ -189,7 +189,7 @@ export default function TaskManagement() {
   };
 
   const handleViewDetails = (field, value) => {
-    setDetailToShow({field, value});
+    setDetailToShow({ field, value });
     setOpenDetailDialog(true);
   };
 
@@ -212,12 +212,12 @@ export default function TaskManagement() {
     <div>
       <CustomNavbar />
       <Container>
-        <Typography variant='h4' sx={{mt: 4, mb: 4}} gutterBottom>
+        <Typography variant='h4' sx={{ mt: 4, mb: 4 }} gutterBottom>
           ระบบจัดการข้อมูลงาน (Task Management)
         </Typography>
         <Divider />
         {loading ? (
-          <Box sx={{display: 'flex', justifyContent: 'center', mt: 4}}>
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
             <CircularProgress />
           </Box>
         ) : (
@@ -286,10 +286,10 @@ export default function TaskManagement() {
                           task.task_status === 'Pending'
                             ? 'default'
                             : task.task_status === 'In-progress'
-                            ? 'warning'
-                            : task.task_status === 'Completed'
-                            ? 'success'
-                            : 'error'
+                              ? 'warning'
+                              : task.task_status === 'Completed'
+                                ? 'success'
+                                : 'error'
                         }
                       />
                     </TableCell>
@@ -367,9 +367,9 @@ export default function TaskManagement() {
         <Dialog open={openImageDialog} onClose={handleCloseImageDialog} maxWidth='sm' fullWidth>
           <DialogTitle>รูปภาพงาน</DialogTitle>
           <DialogContent>
-            <Box sx={{display: 'flex', justifyContent: 'center'}}>
+            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
               {imageToShow ? (
-                <img src={`${imageToShow}`} alt='Task' style={{maxWidth: '100%', maxHeight: '400px'}} />
+                <img src={`${imageToShow}`} alt='Task' style={{ maxWidth: '100%', maxHeight: '400px' }} />
               ) : (
                 'ไม่พบรูปภาพ'
               )}
@@ -444,7 +444,7 @@ export default function TaskManagement() {
               label='สถานะ'
               name='task_status'
               value={editedTask.task_status || ''}
-              onChange={(e) => setEditedTask({...editedTask, task_status: e.target.value})}
+              onChange={(e) => setEditedTask({ ...editedTask, task_status: e.target.value })}
               fullWidth
             >
               {Object.keys(taskStatusMapping).map((status) => (
@@ -460,50 +460,50 @@ export default function TaskManagement() {
               label='วันที่สิ้นสุด'
               type='date'
               value={editedTask.task_end_date_at || ''}
-              onChange={(e) => setEditedTask({...editedTask, task_end_date_at: e.target.value})}
-              InputLabelProps={{shrink: true}}
+              onChange={(e) => setEditedTask({ ...editedTask, task_end_date_at: e.target.value })}
+              InputLabelProps={{ shrink: true }}
               margin='normal'
-              sx={{marginBottom: 2}}
+              sx={{ marginBottom: 2 }}
             />
 
             {/* รายละเอียดงาน */}
             <TextField
               label='รายละเอียดของงาน'
               value={editedTask.task_detail || ''}
-              onChange={(e) => setEditedTask({...editedTask, task_detail: e.target.value})}
+              onChange={(e) => setEditedTask({ ...editedTask, task_detail: e.target.value })}
               fullWidth
               multiline
               variant='outlined'
-              sx={{marginBottom: 2}}
+              sx={{ marginBottom: 2 }}
             />
 
             {/* รายละเอียดการแก้ไข */}
             <TextField
               label='รายละเอียดการแก้ไข'
               value={editedTask.task_fix_detail || ''}
-              onChange={(e) => setEditedTask({...editedTask, task_fix_detail: e.target.value})}
+              onChange={(e) => setEditedTask({ ...editedTask, task_fix_detail: e.target.value })}
               fullWidth
               multiline
               variant='outlined'
-              sx={{marginBottom: 2}}
+              sx={{ marginBottom: 2 }}
             />
 
             {/* อัปโหลดรูปภาพ */}
-            <Button variant='contained' component='label' sx={{mt: 2}}>
+            <Button variant='contained' component='label' sx={{ mt: 2 }}>
               อัปโหลดรูปภาพใหม่
               <input
                 type='file'
                 hidden
                 onChange={(e) => {
                   const file = e.target.files[0];
-                  setEditedTask({...editedTask, task_pic: file});
+                  setEditedTask({ ...editedTask, task_pic: file });
                 }}
               />
             </Button>
             {editedTask.task_pic && typeof editedTask.task_pic === 'string' && (
-              <Typography sx={{mt: 1}}>
+              <Typography sx={{ mt: 1 }}>
                 รูปภาพเดิม:
-                <img src={`${editedTask.task_pic}`} alt='Task' style={{maxWidth: '100%', maxHeight: '400px'}} />
+                <img src={`${editedTask.task_pic}`} alt='Task' style={{ maxWidth: '100%', maxHeight: '400px' }} />
               </Typography>
             )}
           </DialogContent>
