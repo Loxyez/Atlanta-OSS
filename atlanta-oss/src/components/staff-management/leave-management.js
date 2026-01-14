@@ -141,8 +141,8 @@ export default function LeaveManagement() {
                 {paginatedRequests.map((request) => (
                   <TableRow key={request.request_id}>
                     <TableCell>{request.staff_cardid}</TableCell>
-                    <TableCell>{request.staff_details.staff_name}</TableCell>
-                    <TableCell>{request.leave_types.leave_name}</TableCell>
+                    <TableCell>{request.staff_name}</TableCell>
+                    <TableCell>{request.leave_name}</TableCell>
                     <TableCell>{leavePeriodMapping[request.leave_period] || request.leave_period}</TableCell>
                     <TableCell>{request.start_date}</TableCell>
                     <TableCell>{request.end_date}</TableCell>
