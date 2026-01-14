@@ -1,7 +1,7 @@
-import React, {useEffect, useState} from 'react';
-import {Analytics} from '@vercel/analytics/react';
+import React, { useEffect, useState } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import ReactDOM from 'react-dom';
-import {BrowserRouter as Router, Route, Routes, useNavigate, useLocation} from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useNavigate, useLocation } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import axios from 'axios';
@@ -47,7 +47,7 @@ const RoleAccess = {
   CALENDAR: ['Manager', 'Clerk', 'Engineer', 'Trainee', 'Developer', 'operator'],
 };
 
-function SessionExpirationModal({show, handleExtendSession, handleClose}) {
+function SessionExpirationModal({ show, handleExtendSession, handleClose }) {
   return (
     <Modal show={show} onHide={handleClose}>
       <Modal.Header closeButton>
